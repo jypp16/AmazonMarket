@@ -1,0 +1,39 @@
+            </div> <!-- Cierre content-wrapper -->
+        </main> <!-- Cierre main-content -->
+    </div> <!-- Cierre app-layout -->
+
+    <!-- Footer General -->
+    <footer class="app-footer">
+        <p>&copy; <?= date('Y') ?> <span class="gold-text">Amazon</span> Market - Todos los derechos reservados.</p>
+    </footer>
+
+    <!-- Script de Alertas Modales -->
+    <script src="<?= BASE_URL ?>/Assets/js/modal.js"></script>
+
+    <!-- Auto-ocultar alertas flash después de 4 segundos -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const flashSuccess = document.getElementById('flash_success');
+        const flashError = document.getElementById('flash_error');
+        
+        if (flashSuccess) {
+            setTimeout(() => {
+                flashSuccess.style.transition = 'opacity 0.5s, transform 0.5s';
+                flashSuccess.style.opacity = '0';
+                flashSuccess.style.transform = 'translateY(-10px)';
+                setTimeout(() => flashSuccess.remove(), 500);
+            }, 4000);
+        }
+        
+        if (flashError) {
+            setTimeout(() => {
+                flashError.style.transition = 'opacity 0.5s, transform 0.5s';
+                flashError.style.opacity = '0';
+                flashError.style.transform = 'translateY(-10px)';
+                setTimeout(() => flashError.remove(), 500);
+            }, 5000);
+        }
+    });
+    </script>
+</body>
+</html>
