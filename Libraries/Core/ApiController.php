@@ -1,0 +1,86 @@
+<?php
+
+namespace Libraries\Core;
+
+abstract class ApiController {
+
+    protected $model;
+    protected array $requestHeaders = [];
+    protected string $requestMethod;
+    protected ?array $requestBody = null;
+    protected ?int $authenticatedUserId = null;
+
+    public function __construct() {
+        $this->requestMethod = $_SERVER['REQUEST_METHOD'];
+        $this->requestHeaders = getallheaders();
+        $this->parseIncomingRequest();
+        $this->loadModel();
+        $this->enforceAuthentication();
+    }
+
+    private function loadModel(): void {
+        $modelName = str_replace('ApiController', 'Model', get_class($this));
+        $modelPath = __DIR__ . '/../../Models/' . class_basename($modelName) . '.php';
+        if (file_exists($modelPath)) {
+            $this->model = new $modelName();
+        }
+    }
+
+    private function parseIncomingRequest(): void {
+        if (in_array($this->requestMethod, ['POST', 'PUT', 'PATCH', 'DELETE'])) {
+            $contentType = $this->requestHeaders['Content-Type'] ?? $this->requestHeaders['content-type'] ?? '';
+
+            if (str_contains($contentType, 'application/json')) {
+                $rawInput = file_get_contents('php://input');
+                $decoded = json_decode($rawInput, true);
+
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $this->requestBody = $decoded;
+                } else {
+                    $this->sendJsonResponse(['status' => false, 'message' => 'La sintaxis JSON de la petición es inválida'], 400);
+                }
+            } elseif ($this->requestMethod !== 'DELETE') {
+                $this->sendJsonResponse(['status' => false, 'message' => 'El tipo de contenido debe ser application/json'], 415);
+            }
+        }
+    }
+
+    private function enforceAuthentication(): void {
+        if (empty($_SESSION['login'])) {
+            $this->sendJsonResponse(['status' => false, 'message' => 'No autenticado.'], 401);
+        }
+        $this->authenticatedUserId = $_SESSION['idUser'] ?? null;
+    }
+
+    protected function requirePermission(string $slug): void {
+        $rol = $_SESSION['rol'] ?? 0;
+        if ($rol != 1) {
+            if (!\Libraries\Middleware\RBACMiddleware::tienePermiso($rol, $slug)) {
+                $this->sendJsonResponse(['status' => false, 'message' => 'No tienes permisos para acceder a este recurso.'], 403);
+            }
+        }
+    }
+
+    protected function sendJsonResponse(array $data, int $statusCode = 200): void {
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+        header('Content-Type: application/json; charset=utf-8');
+        http_response_code($statusCode);
+        echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        exit();
+    }
+
+    protected function getInput(): array {
+        return $this->requestBody ?? [];
+    }
+
+    protected function getParam(string $key, $default = null) {
+        return $_GET[$key] ?? $default;
+    }
+
+    private static function class_basename(string $class): string {
+        $parts = explode('\\', $class);
+        return end($parts);
+    }
+}
