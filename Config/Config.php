@@ -1,6 +1,7 @@
 <?php
 
-const BASE_URL = 'http://localhost/AM3/AmazonMarket';
+const BASE_URL = 'http://localhost/AM4/AmazonMarket';
+const API_URL = BASE_URL . '/api';
 
 const CONNECTION = false;
 const DB_HOST = 'localhost';
