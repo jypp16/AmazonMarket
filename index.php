@@ -90,6 +90,12 @@ if (!$esRutaPublica && !$isApiRoute) {
     }
 }
 
+// Validación CSRF para peticiones API que modifican estado
+// (la autenticación de la API la maneja ApiController::enforceAuthentication)
+if ($isApiRoute && in_array($_SERVER['REQUEST_METHOD'], ['POST', 'PUT', 'PATCH', 'DELETE'], true)) {
+    Libraries\Middleware\CSRFMiddleware::verifyOrFail();
+}
+
 // =====================================================
 // DISPATCH
 // =====================================================
