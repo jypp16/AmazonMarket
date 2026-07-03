@@ -2,9 +2,15 @@
 
 <div class="table-container-header">
     <h3>Directorio de Usuarios</h3>
-    <?php if (can('usuarios.crear')): ?>
-    <a href="<?= BASE_URL ?>/Usuario/crear" class="btn btn-gold"><i class="fa-solid fa-user-plus"></i> Registrar Usuario</a>
-    <?php endif; ?>
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="position: relative; display: flex; align-items: center;">
+            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; color: var(--text-secondary); pointer-events: none; font-size: 13px;"></i>
+            <input type="text" id="busqueda_usuario" placeholder="Buscar usuario..." style="padding: 8px 12px 8px 34px; border: 1.5px solid #cbd5e1; border-radius: var(--radius-md); font-size: 13px; font-weight: 500; width: 220px; outline: none;">
+        </div>
+        <?php if (can('usuarios.crear')): ?>
+        <button type="button" id="btn_crear_usuario" class="btn btn-gold"><i class="fa-solid fa-user-plus"></i> Registrar Usuario</button>
+        <?php endif; ?>
+    </div>
 </div>
 
 <div class="table-responsive">
@@ -22,50 +28,17 @@
                 <th>Acciones</th>
             </tr>
         </thead>
-        <tbody>
-            <?php if(!empty($data['usuarios'])): ?>
-                <?php foreach($data['usuarios'] as $usu): ?>
-                    <tr>
-                        <td><?= $usu['id_usuario'] ?></td>
-                        <td><span class="badge-neutral"><?= e($usu['rol']) ?></span></td>
-                        <td class="font-semibold"><?= e($usu['username']) ?></td>
-                        <td><?= e($usu['nombre']) ?></td>
-                        <td><?= e($usu['dni']) ?></td>
-                        <td><?= !empty($usu['telefono']) ? e($usu['telefono']) : '-' ?></td>
-                        <td><?= !empty($usu['email']) ? e($usu['email']) : '-' ?></td>
-                        <td><?= !empty($usu['direccion']) ? e($usu['direccion']) : '-' ?></td>
-                        <td>
-                            <div class="actions-group">
-                                <?php if (can('usuarios.editar')): ?>
-                                <a href="<?= BASE_URL ?>/Usuario/editar/<?= $usu['id_usuario'] ?>" class="btn btn-edit" title="Editar"><i class="fa-solid fa-pen-to-square"></i></a>
-                                <?php endif; ?>
-                                <?php if (can('usuarios.eliminar')): ?>
-                                <button type="button" class="btn btn-delete" title="Eliminar" onclick="confirmarEliminacion('<?= BASE_URL ?>/Usuario/eliminar/<?= $usu['id_usuario'] ?>', 'usuario')"><i class="fa-solid fa-trash-can"></i></button>
-                                <?php endif; ?>
-                            </div>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <tr>
-                    <td colspan="9" class="text-center">No hay usuarios registrados en el sistema.</td>
-                </tr>
-            <?php endif; ?>
+        <tbody id="tabla_usuarios">
+            <tr>
+                <td colspan="9" class="text-center">Cargando usuarios...</td>
+            </tr>
         </tbody>
     </table>
 </div>
 
 <script>
-async function confirmarEliminacion(url, tipo) {
-    const result = await Modal.confirm(
-        'Confirmar Eliminación',
-        `¿Está seguro de dar de baja a este ${tipo}? Esta acción no se puede deshacer.`,
-        'danger'
-    );
-    if (result) {
-        window.location.href = url;
-    }
-}
+const canEdit = <?= can('usuarios.editar') ? 'true' : 'false' ?>;
+const canDelete = <?= can('usuarios.eliminar') ? 'true' : 'false' ?>;
 </script>
 
 <?php require_once "Views/Footer.php"; ?>

@@ -26,20 +26,16 @@ class CSRFMiddleware extends Middleware {
     }
 
     public static function validate(): bool {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        // Sólo los métodos que modifican estado requieren token CSRF
+        $metodosProtegidos = ['POST', 'PUT', 'PATCH', 'DELETE'];
+        if (!in_array($_SERVER['REQUEST_METHOD'], $metodosProtegidos, true)) {
             return true;
         }
 
-        $token = null;
-        
-        if (isset($_SERVER['HTTP_X_CSRF_TOKEN'])) {
-            $token = $_SERVER['HTTP_X_CSRF_TOKEN'];
-        } elseif (isset($_POST['csrf_token'])) {
-            $token = $_POST['csrf_token'];
-        } elseif (isset($_SERVER['CONTENT_TYPE']) && strpos($_SERVER['CONTENT_TYPE'], 'application/json') !== false) {
-            $input = json_decode(file_get_contents('php://input'), true);
-            $token = $input['csrf_token'] ?? null;
-        }
+        // El token puede venir en cabecera (API) o en form-data (web).
+        // Se evita leer php://input para no consumir el stream que el
+        // ApiController necesita para parsear el body JSON.
+        $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['csrf_token'] ?? null;
 
         if (!$token || !hash_equals($_SESSION['csrf_token'] ?? '', $token)) {
             return false;
@@ -60,8 +56,14 @@ class CSRFMiddleware extends Middleware {
             exit;
         }
 
+        // Ruta solicitada (para derivar el fallback). Si es pública (p.ej. Auth)
+        // o no hay referer, redirigir a /Auth en lugar de /Home (evita bucle auth).
+        $url = strtolower($_GET['url'] ?? '');
+        $esRutaPublica = (strpos($url, 'auth') === 0);
+        $fallback = $esRutaPublica ? '/Auth' : '/Home';
+
         $_SESSION['error'] = 'Token de seguridad inválido. Intente de nuevo.';
-        header("Location: " . ($_SERVER['HTTP_REFERER'] ?? (BASE_URL . "/Home")));
+        header("Location: " . ($_SERVER['HTTP_REFERER'] ?? (BASE_URL . $fallback)));
         exit;
     }
 }

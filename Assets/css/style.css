@@ -1011,6 +1011,63 @@ button, select, input, textarea {
     transform: translateY(-1px);
 }
 
+/* --- Modal Form --- */
+.modal-form-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.modal-form-header h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s;
+}
+
+.modal-close-btn:hover {
+    background-color: var(--color-danger-light);
+    color: var(--color-danger);
+}
+
+.modal-form-body {
+    text-align: left;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.modal-container.modal-form {
+    text-align: left;
+    max-width: 600px;
+}
+
+.form-error-msg {
+    background-color: var(--color-danger-light);
+    color: var(--color-danger);
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 8px;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    white-space: pre-line;
+}
+
 /* --- Keyframe Animations --- */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-4px); }
