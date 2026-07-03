@@ -70,8 +70,22 @@ class VentaService {
             return ['status' => false, 'message' => 'El tipo de comprobante seleccionado no es válido.'];
         }
 
-        // 4. Ejecutar transacción
-        return $this->ejecutarTransaccion($input, $id_cliente, $id_tipo_comprobante);
+        // 4. Validar inquilino autenticado (defensa BOLA/IDOR)
+        $id_usuario = intval($input['id_usuario'] ?? 0);
+        if ($id_usuario <= 0) {
+            return ['status' => false, 'message' => 'Sesión inválida: no se pudo identificar al usuario autenticado.'];
+        }
+
+        // Verificar que el inquilino exista y esté activo
+        $usuario = $this->pdo->prepare("SELECT id_usuario, estado FROM usuario WHERE id_usuario = :id LIMIT 1");
+        $usuario->execute([':id' => $id_usuario]);
+        $usrRow = $usuario->fetch(PDO::FETCH_ASSOC);
+        if (!$usrRow || intval($usrRow['estado']) !== 1) {
+            return ['status' => false, 'message' => 'El usuario autenticado no existe o está inactivo.'];
+        }
+
+        // 5. Ejecutar transacción vinculada al inquilino validado
+        return $this->ejecutarTransaccion($input, $id_cliente, $id_tipo_comprobante, $id_usuario);
     }
 
     private function validarItemProducto(array $item, int $index): string|true {
@@ -87,7 +101,7 @@ class VentaService {
         return true;
     }
 
-    private function ejecutarTransaccion(array $input, int $id_cliente, int $id_tipo_comprobante): array {
+    private function ejecutarTransaccion(array $input, int $id_cliente, int $id_tipo_comprobante, int $id_usuario): array {
         $this->pdo->beginTransaction();
 
         try {
@@ -105,8 +119,7 @@ class VentaService {
                 $detalles[] = $resultado['detalle'];
             }
 
-            // Crear venta
-            $id_usuario = $_SESSION['idUser'] ?? 1;
+            // Crear venta (id_usuario llega validado desde el controlador/ApiController)
             $serie = ($id_tipo_comprobante == 1) ? "B001" : "F001";
             $numRow = $this->ventaModel->count();
             $numero = str_pad(intval($numRow) + 1, 8, "0", STR_PAD_LEFT);

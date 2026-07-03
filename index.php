@@ -40,8 +40,9 @@ if ($isApiRoute) {
     array_shift($arrUrl);
 
     $resource = strtolower($arrUrl[0] ?? '');
-    $accion = strtolower($arrUrl[1] ?? '');
-    $params = $arrUrl[2] ?? ($arrUrl[1] ?? '');
+    // Patrón API: /api/{recurso} o /api/{recurso}/{id}
+    // El id (si existe) viaja como único parámetro del método index()
+    $params = $arrUrl[2] ?? $arrUrl[1] ?? '';
 
     // Mapeo de recursos a controladores API
     $apiMap = [
