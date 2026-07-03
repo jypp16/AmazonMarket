@@ -27,6 +27,7 @@ class VentaApiController extends ApiController
                 $this->store();
                 break;
             default:
+                header('Allow: GET, POST');
                 $this->sendJsonResponse(['status' => false, 'message' => 'Método no permitido'], 405);
                 break;
         }
