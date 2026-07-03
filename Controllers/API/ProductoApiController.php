@@ -1,6 +1,6 @@
 <?php
 
-namespace Controllers;
+namespace Controllers\API;
 
 use Libraries\Core\ApiController;
 use Models\CategoriaModel;

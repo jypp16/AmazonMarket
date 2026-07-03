@@ -56,13 +56,6 @@ if ($isApiRoute) {
     $controller = $apiMap[$resource] ?? ucfirst($resource) . 'ApiController';
     $method = 'index';
 
-    // Acciones especiales (stats, search, etc.)
-    $accionesEspeciales = ['stats', 'search'];
-    if (in_array($accion, $accionesEspeciales)) {
-        $method = $accion;
-        $params = '';
-    }
-
 } else {
     // Ruta web tradicional: /{controller}/{method}/{params}
     $method = $arrUrl[1] ?? 'index';
