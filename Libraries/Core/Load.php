@@ -1,6 +1,5 @@
 <?php
 
-<<<<<<< HEAD
 if ($isApiRoute) {
     $controllerClass = "Controllers\\API\\{$controller}";
 } else {
@@ -8,13 +7,6 @@ if ($isApiRoute) {
 }
 
 if (!class_exists($controllerClass)) {
-=======
-// Para rutas API, buscar en Controllers/
-$controllerClass = "Controllers\\{$controller}";
-
-if (!class_exists($controllerClass)) {
-    // Intentar con Controller al final
->>>>>>> 2cb39a5827cfe4c8e555f3aac48d71733a4ab97e
     $controllerClass = "Controllers\\{$controller}Controller";
 }
 
