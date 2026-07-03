@@ -76,10 +76,9 @@ class VentaService {
             return ['status' => false, 'message' => 'Sesión inválida: no se pudo identificar al usuario autenticado.'];
         }
 
-        // Verificar que el inquilino exista y esté activo
-        $usuario = $this->pdo->prepare("SELECT id_usuario, estado FROM usuario WHERE id_usuario = :id LIMIT 1");
-        $usuario->execute([':id' => $id_usuario]);
-        $usrRow = $usuario->fetch(PDO::FETCH_ASSOC);
+        $usrStmt = $this->pdo->prepare("SELECT id_usuario, estado FROM usuario WHERE id_usuario = :id LIMIT 1");
+        $usrStmt->execute([':id' => $id_usuario]);
+        $usrRow = $usrStmt->fetch(PDO::FETCH_ASSOC);
         if (!$usrRow || intval($usrRow['estado']) !== 1) {
             return ['status' => false, 'message' => 'El usuario autenticado no existe o está inactivo.'];
         }
@@ -121,8 +120,13 @@ class VentaService {
 
             // Crear venta (id_usuario llega validado desde el controlador/ApiController)
             $serie = ($id_tipo_comprobante == 1) ? "B001" : "F001";
-            $numRow = $this->ventaModel->count();
-            $numero = str_pad(intval($numRow) + 1, 8, "0", STR_PAD_LEFT);
+            // Generar número correlativo por serie. SELECT ... FOR UPDATE bloquea
+            // las filas leídas dentro de la transacción, evitando que dos ventas
+            // concurrentes obtengan el mismo número (race condition).
+            $numStmt = $this->pdo->prepare("SELECT MAX(CAST(numero AS UNSIGNED)) AS max_num FROM venta WHERE serie = :serie FOR UPDATE");
+            $numStmt->execute([':serie' => $serie]);
+            $maxNum = (int) $numStmt->fetchColumn();
+            $numero = str_pad($maxNum + 1, 8, "0", STR_PAD_LEFT);
 
             $ventaData = [
                 'id_cliente' => $id_cliente,
@@ -158,12 +162,19 @@ class VentaService {
                     return ['status' => false, 'message' => 'Error al registrar el detalle de la venta.'];
                 }
 
-                $updateSql = "UPDATE producto SET stock_actual = stock_actual - :cantidad WHERE id_producto = :id_producto";
+                $updateSql = "UPDATE producto SET stock_actual = stock_actual - :cantidad WHERE id_producto = :id_producto AND stock_actual >= :cantidad";
                 $updateStmt = $this->pdo->prepare($updateSql);
                 $updateStmt->execute([
                     ':cantidad' => $det['cantidad'],
                     ':id_producto' => $det['id_producto']
                 ]);
+                // Si ninguna fila fue afectada, el stock ya no alcanza (concurrencia)
+                if ($updateStmt->rowCount() === 0) {
+                    $this->pdo->rollBack();
+                    $prodInfo = $this->productoModel->find($det['id_producto']);
+                    $disponible = $prodInfo ? $prodInfo['stock_actual'] : 0;
+                    return ['status' => false, 'message' => "Stock insuficiente para el producto ID {$det['id_producto']}. Disponible: {$disponible}"];
+                }
             }
 
             $this->pdo->commit();
@@ -182,7 +193,9 @@ class VentaService {
             if ($this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
             }
-            return ['status' => false, 'message' => 'Error en la venta: ' . $e->getMessage()];
+            // No filtrar detalles internos al cliente; loguear la excepción.
+            error_log('Error en VentaService::ejecutarTransaccion -> ' . $e->getMessage());
+            return ['status' => false, 'message' => 'Ocurrió un error interno al procesar la venta. Intente nuevamente.'];
         }
     }
 
@@ -190,7 +203,11 @@ class VentaService {
         $id_prod = intval($item['id_producto']);
         $cant = floatval($item['cantidad']);
 
-        $producto = $this->productoModel->find($id_prod);
+        $producto = $this->productoModel
+            ->select(['producto.*', 'unidad_medida.abreviatura as unidad'])
+            ->join('unidad_medida', 'producto.id_unidad = unidad_medida.id_unidad', 'INNER')
+            ->where(['producto.id_producto' => $id_prod])
+            ->first();
 
         if (!$producto || $producto['estado'] != 1) {
             return ['error' => true, 'message' => "El producto con ID {$id_prod} no existe o está inactivo."];

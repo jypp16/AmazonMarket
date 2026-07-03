@@ -1,7 +1,9 @@
 <?php
 
+// Reportar todos los errores pero no mostrarlos al usuario final (information disclosure)
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
 
 require_once("Config/Config.php");
 session_start();
@@ -32,15 +34,14 @@ $isApiRoute = (strtolower($arrUrl[0]) === 'api');
 
 // 4. Excluir rutas públicas del middleware de autenticación
 $rutasPublicas = ['Auth'];
-$controller = ucwords($arrUrl[0]) ?? 'Auth';
+$controller = ucwords($arrUrl[0]);
 $esRutaPublica = in_array($controller, $rutasPublicas);
 
 if ($isApiRoute) {
-    // Ruta API: /api/{recurso}/{accion}/{id}
+    // Ruta API: /api/{recurso} o /api/{recurso}/{id}
     array_shift($arrUrl);
 
     $resource = strtolower($arrUrl[0] ?? '');
-    // Patrón API: /api/{recurso} o /api/{recurso}/{id}
     // El id (si existe) viaja como único parámetro del método index()
     $params = $arrUrl[2] ?? $arrUrl[1] ?? '';
 
@@ -52,10 +53,16 @@ if ($isApiRoute) {
         'ventas'        => 'VentaApiController',
         'categorias'    => 'CategoriaApiController',
         'unidades'      => 'UnidadApiController',
+        'comprobantes'  => 'TipoComprobanteApiController',
+        'pagos'         => 'MetodoPagoApiController',
+        'tipos-documento' => 'TipoDocumentoApiController',
+        'roles'         => 'RolApiController',
     ];
 
     $controller = $apiMap[$resource] ?? ucfirst($resource) . 'ApiController';
-    $method = 'index';
+    // Dispatch RESTful puro: el verbo HTTP determina el método del controlador
+    // (get/post/put/delete).ApiController base provee 405 por defecto.
+    $method = strtolower($_SERVER['REQUEST_METHOD']);
 
 } else {
     // Ruta web tradicional: /{controller}/{method}/{params}

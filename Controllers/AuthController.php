@@ -21,6 +21,9 @@ class AuthController extends Controller {
 
     public function login() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Validar token CSRF también en el login (login CSRF mitigation)
+            Libraries\Middleware\CSRFMiddleware::verifyOrFail();
+
             $resultado = $this->service->login(
                 $_POST['username'] ?? '',
                 $_POST['password'] ?? ''

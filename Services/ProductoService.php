@@ -3,6 +3,7 @@
 namespace Services;
 
 use Models\ProductoModel;
+use Models\UnidadMedidaModel;
 use Libraries\Core\Validation;
 
 class ProductoService {
@@ -27,6 +28,20 @@ class ProductoService {
 
         if ($validator->fails()) {
             return ['status' => false, 'errors' => $validator->errors()];
+        }
+
+        $unidadesDecimales = ['KG', 'LTR', 'LT', 'ML', 'G', 'OZ', 'LB', 'GAL', 'M', 'CM'];
+        $unidadModel = new UnidadMedidaModel();
+        $unidad = $unidadModel->find(intval($input['id_unidad'] ?? 1));
+        $abrev = strtoupper(trim($unidad['abreviatura'] ?? ''));
+        $aceptaDecimales = in_array($abrev, $unidadesDecimales);
+
+        if (!$aceptaDecimales) {
+            $stock = floatval($input['stock_actual'] ?? 0);
+            $minimo = floatval($input['stock_minimo'] ?? 1);
+            if ($stock != intval($stock) || $minimo != intval($minimo)) {
+                return ['status' => false, 'message' => 'La unidad "' . ($unidad['nombre'] ?? '') . '" no acepta cantidades decimales. Use valores enteros.'];
+            }
         }
 
         $productoData = [
@@ -61,6 +76,23 @@ class ProductoService {
 
         if ($validator->fails()) {
             return ['status' => false, 'errors' => $validator->errors()];
+        }
+
+        if (isset($input['id_unidad']) || isset($input['stock_actual']) || isset($input['stock_minimo'])) {
+            $unidadesDecimales = ['KG', 'LTR', 'LT', 'ML', 'G', 'OZ', 'LB', 'GAL', 'M', 'CM'];
+            $unidadId = intval($input['id_unidad'] ?? $id);
+            $unidadModel = new UnidadMedidaModel();
+            $unidad = $unidadModel->find($unidadId);
+            $abrev = strtoupper(trim($unidad['abreviatura'] ?? ''));
+            $aceptaDecimales = in_array($abrev, $unidadesDecimales);
+
+            if (!$aceptaDecimales) {
+                $stock = floatval($input['stock_actual'] ?? 0);
+                $minimo = floatval($input['stock_minimo'] ?? 1);
+                if ($stock != intval($stock) || $minimo != intval($minimo)) {
+                    return ['status' => false, 'message' => 'La unidad "' . ($unidad['nombre'] ?? '') . '" no acepta cantidades decimales. Use valores enteros.'];
+                }
+            }
         }
 
         $productoData = [

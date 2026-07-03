@@ -12,7 +12,38 @@ if (!class_exists($controllerClass)) {
 
 if (class_exists($controllerClass)) {
     $controllerObject = new $controllerClass();
-    if (method_exists($controllerObject, $method)) {
+
+    // Whitelist: sólo enrutar métodos públicos declarados explícitamente por el
+    // controlador (no heredados de las clases base Controller/ApiController).
+    // Esto evita invocar helpers internos expuestos como públicos.
+    $esMetodoPropio = false;
+    try {
+        $ref = new \ReflectionClass($controllerObject);
+        if ($ref->hasMethod($method)) {
+            $refMethod = $ref->getMethod($method);
+            $esMetodoPropio = (
+                $refMethod->isPublic()
+                && !$refMethod->isConstructor()
+            );
+            // Para rutas web: sólo métodos declarados por el propio controlador
+            // (evita invocar helpers heredados de Controller base).
+            // Para rutas API: también se permiten los verbos HTTP heredados de
+            // ApiController (get/post/put/delete), que responden 405 por defecto.
+            $declaringClass = $refMethod->getDeclaringClass()->getName();
+            if ($isApiRoute ?? false) {
+                $esMetodoPropio = $esMetodoPropio && (
+                    $declaringClass === $ref->getName()
+                    || is_a($declaringClass, \Libraries\Core\ApiController::class, true)
+                );
+            } else {
+                $esMetodoPropio = $esMetodoPropio && $declaringClass === $ref->getName();
+            }
+        }
+    } catch (\ReflectionException $e) {
+        $esMetodoPropio = false;
+    }
+
+    if ($esMetodoPropio) {
         $controllerObject->$method($params);
     } else {
         if ($isApiRoute ?? false) {
