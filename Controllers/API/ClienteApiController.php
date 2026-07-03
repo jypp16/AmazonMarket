@@ -15,28 +15,25 @@ class ClienteApiController extends ApiController
         $this->clienteModel = new ClienteModel();
     }
 
-    public function index(?string $params = ''): void
+public function get(?string $params = ''): void
     {
         $this->requirePermission('clientes.listar');
+        $this->getClientes($params);
+    }
 
-        switch ($this->requestMethod) {
-            case 'GET':
-                $this->getClientes($params);
-                break;
-            case 'POST':
-                $this->store();
-                break;
-            case 'PUT':
-                $this->update($params);
-                break;
-            case 'DELETE':
-                $this->destroy($params);
-                break;
-            default:
-                header('Allow: GET, POST, PUT, DELETE');
-                $this->sendJsonResponse(['status' => false, 'message' => 'Método no permitido'], 405);
-                break;
-        }
+    public function post(?string $params = ''): void
+    {
+        $this->store();
+    }
+
+    public function put(?string $params = ''): void
+    {
+        $this->update($params);
+    }
+
+    public function delete(?string $params = ''): void
+    {
+        $this->destroy($params);
     }
 
     private function getClientes(?string $id): void
@@ -52,10 +49,20 @@ class ClienteApiController extends ApiController
 
             $this->sendJsonResponse(['status' => true, 'data' => $cliente]);
         } else {
-            $clientes = $this->clienteModel
-                ->where(['estado = 1'])
-                ->orderBy('nombre', 'ASC')
-                ->get();
+            $search = $this->getParam('q', '');
+
+            $query = $this->clienteModel->where(['estado = 1']);
+
+            if (!empty($search)) {
+                $query->orLikeWhere([
+                    'nombre' => $search,
+                    'nro_documento' => $search,
+                    'telefono' => $search,
+                    'email' => $search
+                ], 'cli_search_');
+            }
+
+            $clientes = $query->orderBy('nombre', 'ASC')->get();
 
             $this->sendJsonResponse(['status' => true, 'data' => $clientes]);
         }
@@ -71,6 +78,11 @@ class ClienteApiController extends ApiController
         $validator->required(['nombre', 'nro_documento', 'id_tipo_documento'])
             ->minLength('nombre', 3)
             ->maxLength('nombre', 100)
+            ->minLength('nro_documento', 3)
+            ->maxLength('nro_documento', 20)
+            ->maxLength('direccion', 150)
+            ->email('email')
+            ->phone('telefono')
             ->unique('nro_documento', $this->clienteModel);
 
         if ($validator->fails()) {
@@ -126,6 +138,15 @@ class ClienteApiController extends ApiController
         if (isset($data['nro_documento'])) {
             $validator = new \Libraries\Core\Validation($data);
             $validator->unique('nro_documento', $this->clienteModel, $idVal);
+            if ($validator->fails()) {
+                $this->sendJsonResponse(['status' => false, 'message' => 'Error de validación', 'errors' => $validator->errors()], 422);
+            }
+        }
+
+        if (isset($data['email']) || isset($data['telefono'])) {
+            $validator = new \Libraries\Core\Validation($data);
+            if (isset($data['email'])) $validator->email('email');
+            if (isset($data['telefono'])) $validator->phone('telefono');
             if ($validator->fails()) {
                 $this->sendJsonResponse(['status' => false, 'message' => 'Error de validación', 'errors' => $validator->errors()], 422);
             }

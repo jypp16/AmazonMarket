@@ -101,7 +101,11 @@ class UsuarioController extends Controller {
             $input = $isJson ? json_decode(file_get_contents('php://input'), true) : $_POST;
             if (!$input) $input = $_POST;
 
-            $resultado = $this->service->actualizar($id, $input);
+            $resultado = $this->service->actualizar(
+                $id,
+                $input,
+                intval($_SESSION['rol'] ?? 0)
+            );
 
             if ($isJson) {
                 $statusCode = $resultado['status'] ? 200 : 400;
@@ -123,7 +127,11 @@ class UsuarioController extends Controller {
         $id = intval($params);
         if ($id > 0) {
             $isJson = isset($_GET['json']) || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
-            $resultado = $this->service->eliminar($id);
+            $resultado = $this->service->eliminar(
+                $id,
+                intval($_SESSION['idUser'] ?? 0),
+                intval($_SESSION['rol'] ?? 0)
+            );
 
             if ($isJson) {
                 $statusCode = $resultado['status'] ? 200 : 500;

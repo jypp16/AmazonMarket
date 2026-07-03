@@ -15,28 +15,25 @@ class UsuarioApiController extends ApiController
         $this->usuarioModel = new UsuarioModel();
     }
 
-    public function index(?string $params = ''): void
+public function get(?string $params = ''): void
     {
         $this->requirePermission('usuarios.listar');
+        $this->getUsuarios($params);
+    }
 
-        switch ($this->requestMethod) {
-            case 'GET':
-                $this->getUsuarios($params);
-                break;
-            case 'POST':
-                $this->store();
-                break;
-            case 'PUT':
-                $this->update($params);
-                break;
-            case 'DELETE':
-                $this->destroy($params);
-                break;
-            default:
-                header('Allow: GET, POST, PUT, DELETE');
-                $this->sendJsonResponse(['status' => false, 'message' => 'Método no permitido'], 405);
-                break;
-        }
+    public function post(?string $params = ''): void
+    {
+        $this->store();
+    }
+
+    public function put(?string $params = ''): void
+    {
+        $this->update($params);
+    }
+
+    public function delete(?string $params = ''): void
+    {
+        $this->destroy($params);
     }
 
     private function getUsuarios(?string $id): void
@@ -60,12 +57,23 @@ class UsuarioApiController extends ApiController
 
             $this->sendJsonResponse(['status' => true, 'data' => $usuario]);
         } else {
-            $usuarios = $this->usuarioModel
+            $search = $this->getParam('q', '');
+
+            $query = $this->usuarioModel
                 ->select(['usuario.id_usuario', 'usuario.username', 'usuario.nombre', 'usuario.dni', 'usuario.telefono', 'usuario.direccion', 'usuario.email', 'rol.nombre as rol'])
                 ->join('rol', 'usuario.id_rol = rol.id_rol', 'INNER')
-                ->where(['usuario.estado = 1'])
-                ->orderBy('usuario.id_usuario', 'ASC')
-                ->get();
+                ->where(['usuario.estado = 1']);
+
+            if (!empty($search)) {
+                $query->orLikeWhere([
+                    'usuario.username' => $search,
+                    'usuario.nombre' => $search,
+                    'usuario.dni' => $search,
+                    'usuario.email' => $search
+                ], 'usr_search_');
+            }
+
+            $usuarios = $query->orderBy('usuario.id_usuario', 'ASC')->get();
 
             $this->sendJsonResponse(['status' => true, 'data' => $usuarios]);
         }
@@ -86,7 +94,11 @@ class UsuarioApiController extends ApiController
             ->maxLength('nombre', 100)
             ->minLength('dni', 8)
             ->maxLength('dni', 8)
-            ->unique('username', $this->usuarioModel);
+            ->maxLength('direccion', 100)
+            ->email('email')
+            ->phone('telefono')
+            ->unique('username', $this->usuarioModel)
+            ->unique('dni', $this->usuarioModel);
 
         if ($validator->fails()) {
             $this->sendJsonResponse(['status' => false, 'message' => 'Error de validación', 'errors' => $validator->errors()], 422);
@@ -137,7 +149,13 @@ class UsuarioApiController extends ApiController
         if (isset($data['username'])) $datosActualizar['username'] = trim($data['username']);
         if (isset($data['nombre'])) $datosActualizar['nombre'] = trim($data['nombre']);
         if (isset($data['dni'])) $datosActualizar['dni'] = trim($data['dni']);
-        if (isset($data['id_rol'])) $datosActualizar['id_rol'] = intval($data['id_rol']);
+        // Sólo admin puede cambiar el rol (privilege escalation)
+        if (isset($data['id_rol'])) {
+            if (intval($_SESSION['rol']) !== 1) {
+                $this->sendJsonResponse(['status' => false, 'message' => 'No tienes permisos para cambiar el rol de un usuario.'], 403);
+            }
+            $datosActualizar['id_rol'] = intval($data['id_rol']);
+        }
         if (isset($data['telefono'])) $datosActualizar['telefono'] = trim($data['telefono']);
         if (isset($data['direccion'])) $datosActualizar['direccion'] = trim($data['direccion']);
         if (isset($data['email'])) $datosActualizar['email'] = trim($data['email']);
@@ -152,6 +170,23 @@ class UsuarioApiController extends ApiController
         if (isset($data['username'])) {
             $validator = new \Libraries\Core\Validation($data);
             $validator->unique('username', $this->usuarioModel, $idVal);
+            if ($validator->fails()) {
+                $this->sendJsonResponse(['status' => false, 'message' => 'Error de validación', 'errors' => $validator->errors()], 422);
+            }
+        }
+
+        if (isset($data['dni'])) {
+            $validator = new \Libraries\Core\Validation($data);
+            $validator->unique('dni', $this->usuarioModel, $idVal);
+            if ($validator->fails()) {
+                $this->sendJsonResponse(['status' => false, 'message' => 'Error de validación', 'errors' => $validator->errors()], 422);
+            }
+        }
+
+        if (isset($data['email']) || isset($data['telefono'])) {
+            $validator = new \Libraries\Core\Validation($data);
+            if (isset($data['email'])) $validator->email('email');
+            if (isset($data['telefono'])) $validator->phone('telefono');
             if ($validator->fails()) {
                 $this->sendJsonResponse(['status' => false, 'message' => 'Error de validación', 'errors' => $validator->errors()], 422);
             }
@@ -178,10 +213,25 @@ class UsuarioApiController extends ApiController
             $this->sendJsonResponse(['status' => false, 'message' => 'No tienes permisos para eliminar este usuario.'], 403);
         }
 
+        // No permitir eliminarse a uno mismo (incluso si es admin)
+        if ($idVal === $this->authenticatedUserId) {
+            $this->sendJsonResponse(['status' => false, 'message' => 'No puede eliminar su propia cuenta.'], 403);
+        }
+
         $usuarioExistente = $this->usuarioModel->find($idVal);
 
         if (!$usuarioExistente || $usuarioExistente['estado'] != 1) {
             $this->sendJsonResponse(['status' => false, 'message' => 'Usuario no encontrado'], 404);
+        }
+
+        // Evitar perder el último administrador activo
+        if (intval($usuarioExistente['id_rol']) === 1) {
+            $adminsActivos = $this->usuarioModel
+                ->where(['id_rol' => 1, 'estado = 1'])
+                ->get();
+            if (count($adminsActivos) <= 1) {
+                $this->sendJsonResponse(['status' => false, 'message' => 'No se puede eliminar al último administrador activo.'], 422);
+            }
         }
 
         if ($this->usuarioModel->update($idVal, ['estado' => 0])) {

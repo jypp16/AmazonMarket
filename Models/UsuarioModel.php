@@ -24,6 +24,8 @@ class UsuarioModel extends Model {
     }
 
     public function obtenerUsuarioPorId(int $id) {
-        return $this->where([$this->primaryKey => $id, 'estado = 1'])->first();
+        return $this->select(['usuario.id_usuario', 'usuario.id_rol', 'usuario.username', 'usuario.nombre', 'usuario.dni', 'usuario.telefono', 'usuario.direccion', 'usuario.email', 'usuario.estado'])
+            ->where([$this->primaryKey => $id, 'estado = 1'])
+            ->first();
     }
 }

@@ -20,10 +20,12 @@ abstract class ApiController {
 
     private function loadModel(): void {
         $className = get_class($this);
-        $modelName = str_replace('Controllers\\', 'Models\\', $className);
-        $modelName = str_replace('ApiController', 'Model', $modelName);
-        if (class_exists($modelName)) {
-            $this->model = new $modelName();
+        $parts = explode('\\', $className);
+        $baseName = end($parts);
+        $modelName = str_replace('ApiController', 'Model', $baseName);
+        $fullModelName = 'Models\\' . $modelName;
+        if (class_exists($fullModelName)) {
+            $this->model = new $fullModelName();
         }
     }
 
@@ -78,6 +80,48 @@ abstract class ApiController {
 
     protected function getParam(string $key, $default = null) {
         return $_GET[$key] ?? $default;
+    }
+
+    /**
+     * Métodos HTTP por defecto. Cada controlador sobrescribe los que soporta.
+     * Los no soportados caen aquí y responden 405 con la cabecera Allow
+     * derivada dinámicamente de los métodos que el controlador implementa.
+     */
+    public function get(?string $params = ''): void {
+        $this->respondMethodNotAllowed();
+    }
+
+    public function post(?string $params = ''): void {
+        $this->respondMethodNotAllowed();
+    }
+
+    public function put(?string $params = ''): void {
+        $this->respondMethodNotAllowed();
+    }
+
+    public function delete(?string $params = ''): void {
+        $this->respondMethodNotAllowed();
+    }
+
+    public function patch(?string $params = ''): void {
+        $this->respondMethodNotAllowed();
+    }
+
+    private function respondMethodNotAllowed(): void {
+        $verbs = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
+        $allowed = [];
+        foreach ($verbs as $verb) {
+            if (method_exists($this, strtolower($verb))) {
+                $ref = new \ReflectionMethod($this, strtolower($verb));
+                if ($ref->getDeclaringClass()->getName() !== self::class) {
+                    $allowed[] = $verb;
+                }
+            }
+        }
+        if (!empty($allowed)) {
+            header('Allow: ' . implode(', ', $allowed));
+        }
+        $this->sendJsonResponse(['status' => false, 'message' => 'Método HTTP no permitido en este recurso'], 405);
     }
 
     private static function class_basename(string $class): string {
