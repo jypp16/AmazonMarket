@@ -33,6 +33,7 @@ class ClienteApiController extends ApiController
                 $this->destroy($params);
                 break;
             default:
+                header('Allow: GET, POST, PUT, DELETE');
                 $this->sendJsonResponse(['status' => false, 'message' => 'Método no permitido'], 405);
                 break;
         }
