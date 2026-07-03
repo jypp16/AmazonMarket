@@ -19,9 +19,10 @@ abstract class ApiController {
     }
 
     private function loadModel(): void {
-        $modelName = str_replace('ApiController', 'Model', get_class($this));
-        $modelPath = __DIR__ . '/../../Models/' . class_basename($modelName) . '.php';
-        if (file_exists($modelPath)) {
+        $className = get_class($this);
+        $modelName = str_replace('Controllers\\', 'Models\\', $className);
+        $modelName = str_replace('ApiController', 'Model', $modelName);
+        if (class_exists($modelName)) {
             $this->model = new $modelName();
         }
     }
