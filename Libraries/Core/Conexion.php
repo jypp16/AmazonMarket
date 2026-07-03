@@ -13,8 +13,12 @@ class Conexion {
         try {
             $this->conect = new PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=' . DB_CHARSET, DB_USER, DB_PASS);
             $this->conect->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $this->conect->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            die("Error de conexión: " . $e->getMessage());
+            // No filtrar detalles de la BD al usuario final
+            error_log('Error de conexión BD: ' . $e->getMessage());
+            http_response_code(500);
+            die('No se pudo establecer la conexión con el servidor. Intente más tarde.');
         }
     }
 

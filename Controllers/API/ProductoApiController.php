@@ -8,27 +8,21 @@ use Models\UnidadMedidaModel;
 
 class ProductoApiController extends ApiController {
 
-    public function index(?string $params = ""): void {
+    public function get(?string $params = ""): void {
         $this->requirePermission('productos.listar');
+        $this->getProductos($params);
+    }
 
-        switch ($this->requestMethod) {
-            case 'GET':
-                $this->getProductos($params);
-                break;
-            case 'POST':
-                $this->createProducto();
-                break;
-            case 'PUT':
-                $this->updateProducto($params);
-                break;
-            case 'DELETE':
-                $this->deleteProducto($params);
-                break;
-            default:
-                header("Allow: GET, POST, PUT, DELETE");
-                $this->sendJsonResponse(['status' => false, 'message' => 'Método HTTP no permitido en este recurso'], 405);
-                break;
-        }
+    public function post(?string $params = ""): void {
+        $this->createProducto();
+    }
+
+    public function put(?string $params = ""): void {
+        $this->updateProducto($params);
+    }
+
+    public function delete(?string $params = ""): void {
+        $this->deleteProducto($params);
     }
 
     private function getProductos(?string $id): void {
@@ -57,7 +51,10 @@ class ProductoApiController extends ApiController {
                 ->where(['producto.estado = 1']);
 
             if (!empty($search)) {
-                $query->where(["(producto.nombre LIKE '%$search%' OR producto.codigo_barra LIKE '%$search%')"]);
+                $query->orLikeWhere([
+                    'producto.nombre' => $search,
+                    'producto.codigo_barra' => $search
+                ], 'prod_search_');
             }
             if (!empty($categoria)) {
                 $query->where(['producto.id_categoria' => intval($categoria)]);
@@ -93,9 +90,23 @@ class ProductoApiController extends ApiController {
             $this->sendJsonResponse(['status' => false, 'message' => 'Error de validación', 'errors' => $validator->errors()], 422);
         }
 
+        $unidadesDecimales = ['KG', 'LTR', 'LT', 'ML', 'G', 'OZ', 'LB', 'GAL', 'M', 'CM'];
+        $unidadModel = new \Models\UnidadMedidaModel();
+        $unidad = $unidadModel->find(intval($data['id_unidad'] ?? 1));
+        $abrev = strtoupper(trim($unidad['abreviatura'] ?? ''));
+        $aceptaDecimales = in_array($abrev, $unidadesDecimales);
+
+        if (!$aceptaDecimales) {
+            $stock = floatval($data['stock_actual'] ?? 0);
+            $minimo = floatval($data['stock_minimo'] ?? 1);
+            if ($stock != intval($stock) || $minimo != intval($minimo)) {
+                $this->sendJsonResponse(['status' => false, 'message' => 'La unidad "' . ($unidad['nombre'] ?? '') . '" no acepta cantidades decimales. Use valores enteros.'], 422);
+            }
+        }
+
         $productoData = [
-            'codigo_barra' => htmlspecialchars(strip_tags(trim($data['codigo_barra']))),
-            'nombre' => htmlspecialchars(strip_tags(trim($data['nombre']))),
+            'codigo_barra' => trim($data['codigo_barra']),
+            'nombre' => trim($data['nombre']),
             'descripcion' => trim($data['descripcion'] ?? ''),
             'id_categoria' => intval($data['id_categoria'] ?? 1),
             'id_unidad' => intval($data['id_unidad'] ?? 1),
@@ -131,8 +142,8 @@ class ProductoApiController extends ApiController {
         $data = $this->getInput();
         $datosActualizar = [];
 
-        if (isset($data['nombre'])) $datosActualizar['nombre'] = htmlspecialchars(strip_tags(trim($data['nombre'])));
-        if (isset($data['codigo_barra'])) $datosActualizar['codigo_barra'] = htmlspecialchars(strip_tags(trim($data['codigo_barra'])));
+        if (isset($data['nombre'])) $datosActualizar['nombre'] = trim($data['nombre']);
+        if (isset($data['codigo_barra'])) $datosActualizar['codigo_barra'] = trim($data['codigo_barra']);
         if (isset($data['descripcion'])) $datosActualizar['descripcion'] = trim($data['descripcion']);
         if (isset($data['id_categoria'])) $datosActualizar['id_categoria'] = intval($data['id_categoria']);
         if (isset($data['id_unidad'])) $datosActualizar['id_unidad'] = intval($data['id_unidad']);
@@ -149,6 +160,23 @@ class ProductoApiController extends ApiController {
             $validator->unique('codigo_barra', $this->model, $idVal);
             if ($validator->fails()) {
                 $this->sendJsonResponse(['status' => false, 'message' => 'Error de validación', 'errors' => $validator->errors()], 422);
+            }
+        }
+
+        if (isset($data['id_unidad']) || isset($data['stock_actual']) || isset($data['stock_minimo'])) {
+            $unidadesDecimales = ['KG', 'LTR', 'LT', 'ML', 'G', 'OZ', 'LB', 'GAL', 'M', 'CM'];
+            $unidadId = intval($data['id_unidad'] ?? $productoExistente['id_unidad']);
+            $unidadModel = new \Models\UnidadMedidaModel();
+            $unidad = $unidadModel->find($unidadId);
+            $abrev = strtoupper(trim($unidad['abreviatura'] ?? ''));
+            $aceptaDecimales = in_array($abrev, $unidadesDecimales);
+
+            if (!$aceptaDecimales) {
+                $stock = floatval($data['stock_actual'] ?? $productoExistente['stock_actual']);
+                $minimo = floatval($data['stock_minimo'] ?? $productoExistente['stock_minimo']);
+                if ($stock != intval($stock) || $minimo != intval($minimo)) {
+                    $this->sendJsonResponse(['status' => false, 'message' => 'La unidad "' . ($unidad['nombre'] ?? '') . '" no acepta cantidades decimales. Use valores enteros.'], 422);
+                }
             }
         }
 

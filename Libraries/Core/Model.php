@@ -167,6 +167,26 @@ class Model extends Conexion {
         return $this;
     }
 
+    public function likeWhere(string $field, string $value): self {
+        $safeField = $this->quoteFieldPath($field);
+        $safeKey = preg_replace('/[^a-zA-Z0-9_]/', '_', $field);
+        $this->whereBuilder[] = "$safeField LIKE :where_like_$safeKey";
+        $this->whereValues["like_$safeKey"] = '%' . $value . '%';
+        return $this;
+    }
+
+    public function orLikeWhere(array $fieldValuePairs, string $groupPrefix = ''): self {
+        $parts = [];
+        foreach ($fieldValuePairs as $field => $value) {
+            $safeField = $this->quoteFieldPath($field);
+            $safeKey = $groupPrefix . preg_replace('/[^a-zA-Z0-9_]/', '_', $field);
+            $parts[] = "$safeField LIKE :where_like_$safeKey";
+            $this->whereValues["like_$safeKey"] = '%' . $value . '%';
+        }
+        $this->whereBuilder[] = '(' . implode(' OR ', $parts) . ')';
+        return $this;
+    }
+
     public function orderBy($field, $direction = 'ASC') {
         $field = $this->validateFieldName($field);
         $direction = $this->validateDirection($direction);

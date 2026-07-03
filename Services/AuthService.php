@@ -31,6 +31,9 @@ class AuthService {
         $_SESSION['nombre'] = $user['nombre'];
         $_SESSION['rol'] = $user['id_rol'];
 
+        // Prevenir session fixation: regenerar el ID de sesión post-login
+        session_regenerate_id(true);
+
         return ['status' => true];
     }
 

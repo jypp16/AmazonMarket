@@ -12,27 +12,21 @@ class UnidadApiController extends ApiController {
         $this->model = new UnidadMedidaModel();
     }
 
-    public function index(?string $params = ""): void {
+    public function get(?string $params = ""): void {
         $this->requirePermission('productos.listar');
+        $this->getUnidades($params);
+    }
 
-        switch ($this->requestMethod) {
-            case 'GET':
-                $this->getUnidades($params);
-                break;
-            case 'POST':
-                $this->createUnidad();
-                break;
-            case 'PUT':
-                $this->updateUnidad($params);
-                break;
-            case 'DELETE':
-                $this->deleteUnidad($params);
-                break;
-            default:
-                header("Allow: GET, POST, PUT, DELETE");
-                $this->sendJsonResponse(['status' => false, 'message' => 'Método HTTP no permitido en este recurso'], 405);
-                break;
-        }
+    public function post(?string $params = ""): void {
+        $this->createUnidad();
+    }
+
+    public function put(?string $params = ""): void {
+        $this->updateUnidad($params);
+    }
+
+    public function delete(?string $params = ""): void {
+        $this->deleteUnidad($params);
     }
 
     private function getUnidades(?string $id): void {
@@ -74,8 +68,8 @@ class UnidadApiController extends ApiController {
         }
 
         $unidadData = [
-            'nombre' => htmlspecialchars(strip_tags(trim($data['nombre']))),
-            'abreviatura' => htmlspecialchars(strip_tags(trim($data['abreviatura']))),
+            'nombre' => trim($data['nombre']),
+            'abreviatura' => trim($data['abreviatura']),
             'estado' => 1
         ];
 
@@ -105,8 +99,8 @@ class UnidadApiController extends ApiController {
         $data = $this->getInput();
         $datosActualizar = [];
 
-        if (isset($data['nombre'])) $datosActualizar['nombre'] = htmlspecialchars(strip_tags(trim($data['nombre'])));
-        if (isset($data['abreviatura'])) $datosActualizar['abreviatura'] = htmlspecialchars(strip_tags(trim($data['abreviatura'])));
+        if (isset($data['nombre'])) $datosActualizar['nombre'] = trim($data['nombre']);
+        if (isset($data['abreviatura'])) $datosActualizar['abreviatura'] = trim($data['abreviatura']);
 
         if (empty($datosActualizar)) {
             $this->sendJsonResponse(['status' => false, 'message' => 'No se proporcionaron datos para actualizar'], 400);
