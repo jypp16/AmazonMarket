@@ -56,6 +56,9 @@ class VentaController extends Controller {
                 $input = $_POST;
             }
 
+            // Vincular venta al inquilino autenticado (defensa BOLA/IDOR)
+            $input['id_usuario'] = intval($_SESSION['idUser'] ?? 0);
+
             $resultado = $this->service->procesarVenta($input);
 
             header('Content-Type: application/json');
