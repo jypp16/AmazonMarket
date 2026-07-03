@@ -1,19 +1,6 @@
-// =====================================================
-// AMAZON MARKET - Sistema de Alertas Modales
-// Reemplaza alerts y confirms nativos del navegador
-// =====================================================
-
 const Modal = {
-    // Cola de modales para evitar superposición
     _active: false,
 
-    /**
-     * Muestra un modal de información con botón Aceptar
-     * @param {string} titulo - Título del modal
-     * @param {string} mensaje - Mensaje a mostrar
-     * @param {string} tipo - 'success', 'error', 'warning', 'info'
-     * @returns {Promise<void>}
-     */
     alert(titulo, mensaje, tipo = 'info') {
         return new Promise((resolve) => {
             this._close();
@@ -35,26 +22,46 @@ const Modal = {
 
             const overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
-            overlay.innerHTML = `
-                <div class="modal-container modal-alert">
-                    <div class="modal-icon" style="background-color: ${colorMap[tipo]}15; color: ${colorMap[tipo]}">
-                        <i class="fa-solid ${iconMap[tipo]}"></i>
-                    </div>
-                    <h3 class="modal-title">${titulo}</h3>
-                    <p class="modal-message">${mensaje}</p>
-                    <div class="modal-actions">
-                        <button class="modal-btn modal-btn-primary" id="modal_ok_btn">
-                            <i class="fa-solid fa-check"></i> Aceptar
-                        </button>
-                    </div>
-                </div>
-            `;
 
+            const container = document.createElement('div');
+            container.className = 'modal-container modal-alert';
+
+            const iconDiv = document.createElement('div');
+            iconDiv.className = 'modal-icon';
+            iconDiv.style.backgroundColor = colorMap[tipo] + '15';
+            iconDiv.style.color = colorMap[tipo];
+            const iconI = document.createElement('i');
+            iconI.className = 'fa-solid ' + iconMap[tipo];
+            iconDiv.appendChild(iconI);
+
+            const h3 = document.createElement('h3');
+            h3.className = 'modal-title';
+            h3.textContent = titulo;
+
+            const p = document.createElement('p');
+            p.className = 'modal-message';
+            p.textContent = mensaje;
+
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'modal-actions';
+            const btnOk = document.createElement('button');
+            btnOk.className = 'modal-btn modal-btn-primary';
+            btnOk.id = 'modal_ok_btn';
+            const btnOkI = document.createElement('i');
+            btnOkI.className = 'fa-solid fa-check';
+            btnOk.appendChild(btnOkI);
+            btnOk.appendChild(document.createTextNode(' Aceptar'));
+            actionsDiv.appendChild(btnOk);
+
+            container.appendChild(iconDiv);
+            container.appendChild(h3);
+            container.appendChild(p);
+            container.appendChild(actionsDiv);
+            overlay.appendChild(container);
             document.body.appendChild(overlay);
 
             setTimeout(() => overlay.classList.add('modal-active'), 10);
 
-            const btnOk = document.getElementById('modal_ok_btn');
             btnOk.addEventListener('click', () => {
                 this._close();
                 resolve();
@@ -69,13 +76,6 @@ const Modal = {
         });
     },
 
-    /**
-     * Muestra un modal de confirmación con Aceptar y Cancelar
-     * @param {string} titulo - Título del modal
-     * @param {string} mensaje - Mensaje a mostrar
-     * @param {string} tipo - 'warning', 'danger', 'info'
-     * @returns {Promise<boolean>} true si acepta, false si cancela
-     */
     confirm(titulo, mensaje, tipo = 'warning') {
         return new Promise((resolve) => {
             this._close();
@@ -95,30 +95,55 @@ const Modal = {
 
             const overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
-            overlay.innerHTML = `
-                <div class="modal-container modal-confirm">
-                    <div class="modal-icon" style="background-color: ${colorMap[tipo]}15; color: ${colorMap[tipo]}">
-                        <i class="fa-solid ${iconMap[tipo]}"></i>
-                    </div>
-                    <h3 class="modal-title">${titulo}</h3>
-                    <p class="modal-message">${mensaje}</p>
-                    <div class="modal-actions">
-                        <button class="modal-btn modal-btn-secondary" id="modal_cancel_btn">
-                            <i class="fa-solid fa-xmark"></i> Cancelar
-                        </button>
-                        <button class="modal-btn modal-btn-danger" id="modal_accept_btn">
-                            <i class="fa-solid fa-check"></i> Aceptar
-                        </button>
-                    </div>
-                </div>
-            `;
 
+            const container = document.createElement('div');
+            container.className = 'modal-container modal-confirm';
+
+            const iconDiv = document.createElement('div');
+            iconDiv.className = 'modal-icon';
+            iconDiv.style.backgroundColor = colorMap[tipo] + '15';
+            iconDiv.style.color = colorMap[tipo];
+            const iconI = document.createElement('i');
+            iconI.className = 'fa-solid ' + iconMap[tipo];
+            iconDiv.appendChild(iconI);
+
+            const h3 = document.createElement('h3');
+            h3.className = 'modal-title';
+            h3.textContent = titulo;
+
+            const p = document.createElement('p');
+            p.className = 'modal-message';
+            p.textContent = mensaje;
+
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'modal-actions';
+
+            const btnCancel = document.createElement('button');
+            btnCancel.className = 'modal-btn modal-btn-secondary';
+            btnCancel.id = 'modal_cancel_btn';
+            const btnCancelI = document.createElement('i');
+            btnCancelI.className = 'fa-solid fa-xmark';
+            btnCancel.appendChild(btnCancelI);
+            btnCancel.appendChild(document.createTextNode(' Cancelar'));
+            actionsDiv.appendChild(btnCancel);
+
+            const btnAccept = document.createElement('button');
+            btnAccept.className = 'modal-btn modal-btn-danger';
+            btnAccept.id = 'modal_accept_btn';
+            const btnAcceptI = document.createElement('i');
+            btnAcceptI.className = 'fa-solid fa-check';
+            btnAccept.appendChild(btnAcceptI);
+            btnAccept.appendChild(document.createTextNode(' Aceptar'));
+            actionsDiv.appendChild(btnAccept);
+
+            container.appendChild(iconDiv);
+            container.appendChild(h3);
+            container.appendChild(p);
+            container.appendChild(actionsDiv);
+            overlay.appendChild(container);
             document.body.appendChild(overlay);
 
             setTimeout(() => overlay.classList.add('modal-active'), 10);
-
-            const btnAccept = document.getElementById('modal_accept_btn');
-            const btnCancel = document.getElementById('modal_cancel_btn');
 
             btnAccept.addEventListener('click', () => {
                 this._close();
@@ -139,30 +164,18 @@ const Modal = {
         });
     },
 
-    /**
-     * Muestra un modal de éxito
-     */
     success(titulo, mensaje) {
         return this.alert(titulo, mensaje, 'success');
     },
 
-    /**
-     * Muestra un modal de error
-     */
     error(titulo, mensaje) {
         return this.alert(titulo, mensaje, 'error');
     },
 
-    /**
-     * Muestra un modal de advertencia
-     */
     warning(titulo, mensaje) {
         return this.alert(titulo, mensaje, 'warning');
     },
 
-    /**
-     * Cierra el modal activo
-     */
     _close() {
         const overlay = document.querySelector('.modal-overlay');
         if (overlay) {
@@ -173,7 +186,6 @@ const Modal = {
     }
 };
 
-// Funciones globales compatibles con el código existente
 function showModalAlert(titulo, mensaje, tipo = 'info') {
     return Modal.alert(titulo, mensaje, tipo);
 }

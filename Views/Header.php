@@ -19,6 +19,8 @@ $slugs = array_column($permisos, 'slug');
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Hojas de Estilos Corporativas (Azul y Dorado) -->
     <link rel="stylesheet" href="<?= BASE_URL ?>/Assets/css/style.css">
+    <script>const BASE_URL = '<?= BASE_URL ?>'; const API_URL = '<?= API_URL ?>';</script>
+    <script src="<?= BASE_URL ?>/Assets/js/api.js"></script>
 </head>
 <body>
     <div class="app-layout">
