@@ -15,22 +15,15 @@ class VentaApiController extends ApiController
         $this->ventaModel = new VentaModel();
     }
 
-    public function index(?string $params = ''): void
+public function get(?string $params = ''): void
     {
         $this->requirePermission('ventas.acceder');
+        $this->getVentas($params);
+    }
 
-        switch ($this->requestMethod) {
-            case 'GET':
-                $this->getVentas($params);
-                break;
-            case 'POST':
-                $this->store();
-                break;
-            default:
-                header('Allow: GET, POST');
-                $this->sendJsonResponse(['status' => false, 'message' => 'Método no permitido'], 405);
-                break;
-        }
+    public function post(?string $params = ''): void
+    {
+        $this->store();
     }
 
     private function getVentas(?string $id): void
@@ -67,6 +60,10 @@ class VentaApiController extends ApiController
 
         if ($validator->fails()) {
             $this->sendJsonResponse(['status' => false, 'message' => 'Error de validación', 'errors' => $validator->errors()], 422);
+        }
+
+        if (!is_array($data['productos']) || empty($data['productos'])) {
+            $this->sendJsonResponse(['status' => false, 'message' => 'Debe proporcionar un array de productos no vacío.'], 422);
         }
 
         $service = new \Services\VentaService();

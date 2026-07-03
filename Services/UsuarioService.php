@@ -51,9 +51,16 @@ class UsuarioService {
         return ['status' => false, 'message' => 'Error al guardar el usuario.'];
     }
 
-    public function actualizar(int $id, array $input): array {
+    public function actualizar(int $id, array $input, ?int $executorRol = null): array {
+        // Defensa contra privilege escalation:
+        // Sólo el administrador (rol 1) puede cambiar el rol de un usuario.
+        $esAdmin = ($executorRol === 1);
+        if (!$esAdmin && isset($input['id_rol'])) {
+            unset($input['id_rol']);
+        }
+
         $validator = new Validation($input);
-        $validator->required(['username', 'nombre', 'dni', 'id_rol'])
+        $validator->required(['username', 'nombre', 'dni'])
             ->minLength('username', 3)
             ->maxLength('username', 10)
             ->minLength('nombre', 3)
@@ -75,7 +82,6 @@ class UsuarioService {
         }
 
         $usuarioData = [
-            'id_rol' => intval($input['id_rol']),
             'username' => trim($input['username']),
             'nombre' => trim($input['nombre']),
             'dni' => trim($input['dni']),
@@ -83,6 +89,11 @@ class UsuarioService {
             'direccion' => trim($input['direccion'] ?? ''),
             'email' => trim($input['email'] ?? '')
         ];
+
+        // Sólo admin puede asignar rol
+        if ($esAdmin && isset($input['id_rol'])) {
+            $usuarioData['id_rol'] = intval($input['id_rol']);
+        }
 
         if (!empty($input['password'])) {
             $usuarioData['password_hash'] = password_hash(trim($input['password']), PASSWORD_DEFAULT);
@@ -94,7 +105,23 @@ class UsuarioService {
         return ['status' => false, 'message' => 'Error al actualizar el usuario.'];
     }
 
-    public function eliminar(int $id): array {
+    public function eliminar(int $id, ?int $executorId = null, ?int $executorRol = null): array {
+        // No permitir eliminarse a uno mismo
+        if ($executorId !== null && $id === $executorId) {
+            return ['status' => false, 'message' => 'No puede eliminar su propia cuenta.'];
+        }
+
+        // Evitar perder el último administrador activo
+        $usuario = $this->model->find($id);
+        if ($usuario && intval($usuario['id_rol']) === 1 && intval($usuario['estado']) === 1) {
+            $adminsActivos = $this->model
+                ->where(['id_rol' => 1, 'estado = 1'])
+                ->get();
+            if (count($adminsActivos) <= 1) {
+                return ['status' => false, 'message' => 'No se puede eliminar al último administrador activo.'];
+            }
+        }
+
         if ($this->model->update($id, ['estado' => 0])) {
             return ['status' => true, 'message' => 'Usuario eliminado con éxito.'];
         }

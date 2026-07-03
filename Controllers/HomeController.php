@@ -25,7 +25,11 @@ class HomeController extends Controller {
 
             $this->views->render($this, "index", $data);
         } catch (Exception $e) {
-            die("Error en el Dashboard: " . $e->getMessage());
+            // No filtrar detalles internos al usuario final
+            error_log('Error en Dashboard: ' . $e->getMessage());
+            $_SESSION['error'] = 'Ocurrió un problema al cargar el panel. Intente nuevamente.';
+            header("Location: " . BASE_URL . "/Auth");
+            exit;
         }
     }
 }

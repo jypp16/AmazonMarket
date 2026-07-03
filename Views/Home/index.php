@@ -59,7 +59,7 @@
 </div>
 
 <div class="welcome-box">
-    <h2><i class="fa-solid fa-mug-hot"></i> ¡Bienvenido, <?= $_SESSION['nombre'] ?>!</h2>
+    <h2><i class="fa-solid fa-mug-hot"></i> ¡Bienvenido, <?= e($_SESSION['nombre'] ?? '') ?>!</h2>
     <p>Amazon Market está listo para operar. Utiliza el menú lateral para gestionar productos, registrar clientes o iniciar una transacción de venta en el terminal de facturación.</p>
 </div>
 

@@ -24,6 +24,7 @@
         <?php endif; ?>
 
         <form action="<?=BASE_URL?>/Auth/login" method="POST">
+            <?php csrf_field(); ?>
             <div class="input-group">
                 <label for="username">Usuario</label>
                 <input type="text" id="username" name="username" placeholder="Ingresa tu usuario" required>
@@ -37,12 +38,5 @@
     </div>
 
     <script src="<?= BASE_URL ?>/Assets/js/modal.js"></script>
-    <?php if(!empty($_SESSION['error'])): ?>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        Modal.error('Error de Acceso', <?= json_encode($_SESSION['error'] ?? '', JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>);
-    });
-    </script>
-    <?php endif; ?>
 </body>
 </html>

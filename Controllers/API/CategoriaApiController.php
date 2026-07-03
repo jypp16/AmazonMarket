@@ -6,27 +6,21 @@ use Libraries\Core\ApiController;
 
 class CategoriaApiController extends ApiController {
 
-    public function index(?string $params = ""): void {
+    public function get(?string $params = ""): void {
         $this->requirePermission('productos.listar');
+        $this->getCategorias($params);
+    }
 
-        switch ($this->requestMethod) {
-            case 'GET':
-                $this->getCategorias($params);
-                break;
-            case 'POST':
-                $this->createCategoria();
-                break;
-            case 'PUT':
-                $this->updateCategoria($params);
-                break;
-            case 'DELETE':
-                $this->deleteCategoria($params);
-                break;
-            default:
-                header("Allow: GET, POST, PUT, DELETE");
-                $this->sendJsonResponse(['status' => false, 'message' => 'Método HTTP no permitido en este recurso'], 405);
-                break;
-        }
+    public function post(?string $params = ""): void {
+        $this->createCategoria();
+    }
+
+    public function put(?string $params = ""): void {
+        $this->updateCategoria($params);
+    }
+
+    public function delete(?string $params = ""): void {
+        $this->deleteCategoria($params);
     }
 
     private function getCategorias(?string $id): void {
@@ -67,7 +61,7 @@ class CategoriaApiController extends ApiController {
         }
 
         $categoriaData = [
-            'nombre' => htmlspecialchars(strip_tags(trim($data['nombre']))),
+            'nombre' => trim($data['nombre']),
             'estado' => 1
         ];
 
@@ -97,7 +91,7 @@ class CategoriaApiController extends ApiController {
         $data = $this->getInput();
         $datosActualizar = [];
 
-        if (isset($data['nombre'])) $datosActualizar['nombre'] = htmlspecialchars(strip_tags(trim($data['nombre'])));
+        if (isset($data['nombre'])) $datosActualizar['nombre'] = trim($data['nombre']);
 
         if (empty($datosActualizar)) {
             $this->sendJsonResponse(['status' => false, 'message' => 'No se proporcionaron datos para actualizar'], 400);
