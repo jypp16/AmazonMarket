@@ -1,9 +1,7 @@
 <?php require_once "Views/Header.php"; ?>
 
 <div class="pos-layout">
-    <!-- Panel Izquierdo: Selección de Cliente, Comprobante y Selección de Producto -->
     <div class="pos-left-panel">
-        <!-- Tarjeta de Cliente y Documento -->
         <div class="form-container-card">
             <div class="form-card-header">
                 <h3><i class="fa-solid fa-file-invoice"></i> Datos del Comprobante</h3>
@@ -14,12 +12,7 @@
                     <div class="input-with-icon">
                         <i class="fa-solid fa-user"></i>
                         <select id="id_cliente" required>
-                            <option value="">-- Seleccionar Cliente --</option>
-                            <?php foreach($data['clientes'] as $cli): ?>
-                                <option value="<?= $cli['id_cliente'] ?>" data-tipo-doc="<?= $cli['id_tipo_documento'] ?>">
-                                    <?= htmlspecialchars($cli['nombre']) ?> (<?= $cli['nro_documento'] ?>)
-                                </option>
-                            <?php endforeach; ?>
+                            <option value="">-- Cargando clientes... --</option>
                         </select>
                     </div>
                     <small id="cliente-hint" style="color: var(--text-secondary); font-size: 12px; margin-top: 4px; display: none;">
@@ -32,9 +25,7 @@
                     <div class="input-with-icon">
                         <i class="fa-solid fa-receipt"></i>
                         <select id="id_tipo_comprobante" required>
-                            <?php foreach($data['comprobantes'] as $comp): ?>
-                                <option value="<?= $comp['id_tipo_comprobante'] ?>"><?= $comp['nombre'] ?></option>
-                            <?php endforeach; ?>
+                            <option value="">-- Cargando... --</option>
                         </select>
                     </div>
                 </div>
@@ -44,16 +35,13 @@
                     <div class="input-with-icon">
                         <i class="fa-solid fa-credit-card"></i>
                         <select id="id_metodo_pago" required>
-                            <?php foreach($data['pagos'] as $pago): ?>
-                                <option value="<?= $pago['id_metodo_pago'] ?>"><?= $pago['nombre'] ?></option>
-                            <?php endforeach; ?>
+                            <option value="">-- Cargando... --</option>
                         </select>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Tarjeta de Agregar Productos -->
         <div class="form-container-card margin-top-20">
             <div class="form-card-header">
                 <h3><i class="fa-solid fa-cart-plus"></i> Añadir Producto</h3>
@@ -65,9 +53,6 @@
                         <i class="fa-solid fa-filter"></i>
                         <select id="filtro_categoria_venta" onchange="filtrarProductosVenta()">
                             <option value="">Todas</option>
-                            <?php foreach($data['categorias'] as $cat): ?>
-                                <option value="<?= e($cat['nombre']) ?>"><?= e($cat['nombre']) ?></option>
-                            <?php endforeach; ?>
                         </select>
                     </div>
                 </div>
@@ -77,12 +62,7 @@
                     <div class="input-with-icon">
                         <i class="fa-solid fa-box-open"></i>
                         <select id="select_producto" onchange="actualizarInfoProducto()">
-                            <option value="">-- Seleccionar Producto --</option>
-                            <?php foreach($data['productos'] as $prod): ?>
-                                <option value="<?= $prod['id_producto'] ?>" data-categoria="<?= e($prod['categoria']) ?>">
-                                    <?= htmlspecialchars($prod['nombre']) ?>
-                                </option>
-                            <?php endforeach; ?>
+                            <option value="">-- Cargando productos... --</option>
                         </select>
                     </div>
                 </div>
@@ -118,7 +98,6 @@
         </div>
     </div>
 
-    <!-- Panel Derecho: Carrito de Compras y Checkout -->
     <div class="pos-right-panel">
         <div class="form-container-card" style="height: 100%; display: flex; flex-direction: column;">
             <div class="form-card-header">
@@ -126,7 +105,6 @@
                 <span class="badge-accent" id="cart_count_badge">0 items</span>
             </div>
 
-            <!-- Tabla de items del carrito -->
             <div class="cart-items-wrapper flex-grow-1">
                 <table class="table table-pos">
                     <thead>
@@ -148,7 +126,6 @@
                 </table>
             </div>
 
-            <!-- Panel de Totales y Botón de Cobro -->
             <div class="checkout-panel">
                 <div class="totals-summary">
                     <div class="summary-row">
@@ -173,7 +150,6 @@
     </div>
 </div>
 
-<!-- Modal / Overlay de Procesamiento de Carga -->
 <div id="loader_overlay" class="loader-overlay" style="display: none;">
     <div class="loader-content">
         <i class="fa-solid fa-circle-notch fa-spin fa-3x gold-text"></i>
@@ -181,7 +157,6 @@
     </div>
 </div>
 
-<!-- Inyección de URL Base para JS -->
 <script>
     var BaseUrl = "<?= BASE_URL ?>";
 </script>

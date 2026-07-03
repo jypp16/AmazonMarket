@@ -9,6 +9,13 @@
 
     <!-- Script de Alertas Modales -->
     <script src="<?= BASE_URL ?>/Assets/js/modal.js"></script>
+    <script src="<?= BASE_URL ?>/Assets/js/modal-form.js"></script>
+
+    <!-- Scripts de módulos API -->
+    <script src="<?= BASE_URL ?>/Assets/js/productos.js"></script>
+    <script src="<?= BASE_URL ?>/Assets/js/clientes.js"></script>
+    <script src="<?= BASE_URL ?>/Assets/js/usuarios.js"></script>
+    <script src="<?= BASE_URL ?>/Assets/js/venta.js"></script>
 
     <!-- Auto-ocultar alertas flash después de 4 segundos -->
     <script>
