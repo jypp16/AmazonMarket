@@ -16,6 +16,7 @@ class Model extends Conexion {
 
     protected $orderBy = '';
     protected $limit = '';
+    protected $offset = '';
 
     private static $FORBIDDEN_SQL = [
         'UNION', 'SELECT.*FROM', '--', ';--', '/*', '*/', 'EXEC',
@@ -198,7 +199,13 @@ class Model extends Conexion {
         $limit = intval($limit);
         $this->limit = "LIMIT $limit";
         return $this;
-    } 
+    }
+
+    public function offset($offset) {
+        $offset = intval($offset);
+        $this->offset = "OFFSET $offset";
+        return $this;
+    }
 
     public function get() {
         $sql = "SELECT $this->select FROM `$this->table` ";
@@ -214,7 +221,10 @@ class Model extends Conexion {
             $sql .= "ORDER BY " . $this->quoteFieldPath($this->table . "." . $this->primaryKey) . " ASC ";
         }
         if (!empty($this->limit)) {
-            $sql .= $this->limit;
+            $sql .= $this->limit . " ";
+        }
+        if (!empty($this->offset)) {
+            $sql .= $this->offset;
         }
         $stmt = $this->conect()->prepare($sql);
         foreach ($this->whereValues as $key => $value) {
@@ -232,6 +242,7 @@ class Model extends Conexion {
         $this->whereValues = [];
         $this->orderBy = '';
         $this->limit = '';
+        $this->offset = '';
     }
 
     public function first() {
@@ -247,6 +258,22 @@ class Model extends Conexion {
             $sql .= " WHERE $condition";
         }
         $stmt = $this->conect()->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchColumn();
+    }
+
+    public function countWithQuery() {
+        $sql = "SELECT COUNT(*) as total FROM `$this->table` ";
+        if (!empty($this->joins)) {
+            $sql .= implode(" ", $this->joins) . " ";
+        }
+        if (!empty($this->whereBuilder)) {
+            $sql .= "WHERE " . implode(" AND ", $this->whereBuilder) . " ";
+        }
+        $stmt = $this->conect()->prepare($sql);
+        foreach ($this->whereValues as $key => $value) {
+            $stmt->bindValue(":where_$key", $value);
+        }
         $stmt->execute();
         return $stmt->fetchColumn();
     }
