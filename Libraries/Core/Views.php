@@ -9,6 +9,7 @@ class Views {
         $controllerName = str_replace('Controller', '', $controllerName);
         $viewPath = "Views/{$controllerName}/{$view}.php";
         if(file_exists($viewPath)) {
+            extract($data);
             require_once $viewPath;
         }
     }

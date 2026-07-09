@@ -101,6 +101,19 @@ class RBACMiddleware extends Middleware {
                 'index'  => 'ventas.acceder',
                 'guardar' => 'ventas.procesar',
             ],
+            'reporte' => [
+                'index' => 'reportes.ver',
+                'ventas' => 'reportes.ver',
+                'productosMasVendidos' => 'reportes.ver',
+                'productosMenosVendidos' => 'reportes.ver',
+                'inventario' => 'reportes.ver',
+                'clientes' => 'reportes.ver',
+                'vendedores' => 'reportes.ver',
+                'categorias' => 'reportes.ver',
+                'comprobantes' => 'reportes.ver',
+                'metodosPago' => 'reportes.ver',
+                'resumen' => 'reportes.ver',
+            ],
         ];
 
         $controllerMap = $map[$controller] ?? null;

@@ -25,10 +25,15 @@ $slugs = array_column($permisos, 'slug');
 <body>
     <div class="app-layout">
         <!-- Barra Lateral Izquierda (Sidebar) -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <h2><span class="gold-text">Amazon</span> <span class="white-text">Market</span></h2>
-                <span class="role-badge"><i class="fa-solid fa-store"></i> Minimarket</span>
+                <div class="sidebar-brand">
+                    <h2><span class="brand-full"><span class="gold-text">Amazon</span> <span class="white-text">Market</span></span><span class="brand-abbrev"><span class="gold-text">A</span><span class="white-text">M</span></span></h2>
+                    <span class="role-badge"><i class="fa-solid fa-store"></i> <span class="brand-text">Minimarket</span></span>
+                </div>
+                <button type="button" class="sidebar-toggle" id="sidebar_toggle" title="Colapsar menú">
+                    <i class="fa-solid fa-angles-left"></i>
+                </button>
             </div>
             
             <div class="user-profile">
@@ -44,36 +49,42 @@ $slugs = array_column($permisos, 'slug');
             <nav class="menu">
                 <?php if (in_array('dashboard.ver', $slugs)): ?>
                 <a href="<?= BASE_URL ?>/Home" class="menu-link <?= (strpos($_GET['url'] ?? '', 'Home') !== false) ? 'active' : '' ?>">
-                    <i class="fa-solid fa-chart-line"></i> Dashboard
+                    <i class="fa-solid fa-chart-line"></i> <span>Dashboard</span>
                 </a>
                 <?php endif; ?>
 
                 <?php if (in_array('productos.listar', $slugs)): ?>
                 <a href="<?= BASE_URL ?>/Producto" class="menu-link <?= (strpos($_GET['url'] ?? '', 'Producto') !== false) ? 'active' : '' ?>">
-                    <i class="fa-solid fa-boxes-stacked"></i> Productos
+                    <i class="fa-solid fa-boxes-stacked"></i> <span>Productos</span>
                 </a>
                 <?php endif; ?>
 
                 <?php if (in_array('clientes.listar', $slugs)): ?>
                 <a href="<?= BASE_URL ?>/Cliente" class="menu-link <?= (strpos($_GET['url'] ?? '', 'Cliente') !== false) ? 'active' : '' ?>">
-                    <i class="fa-solid fa-users"></i> Clientes
+                    <i class="fa-solid fa-users"></i> <span>Clientes</span>
                 </a>
                 <?php endif; ?>
 
                 <?php if (in_array('usuarios.listar', $slugs)): ?>
                 <a href="<?= BASE_URL ?>/Usuario" class="menu-link <?= (strpos($_GET['url'] ?? '', 'Usuario') !== false) ? 'active' : '' ?>">
-                    <i class="fa-solid fa-user-gear"></i> Usuarios
+                    <i class="fa-solid fa-user-gear"></i> <span>Usuarios</span>
                 </a>
                 <?php endif; ?>
 
                 <?php if (in_array('ventas.acceder', $slugs)): ?>
                 <a href="<?= BASE_URL ?>/Venta" class="menu-link <?= (strpos($_GET['url'] ?? '', 'Venta') !== false) ? 'active' : '' ?>">
-                    <i class="fa-solid fa-cash-register"></i> Punto de Venta
+                    <i class="fa-solid fa-cash-register"></i> <span>Punto de Venta</span>
+                </a>
+                <?php endif; ?>
+
+                <?php if (in_array('reportes.ver', $slugs)): ?>
+                <a href="<?= BASE_URL ?>/Reporte" class="menu-link <?= (strpos($_GET['url'] ?? '', 'Reporte') !== false) ? 'active' : '' ?>">
+                    <i class="fa-solid fa-chart-pie"></i> <span>Reportes</span>
                 </a>
                 <?php endif; ?>
 
                 <a href="<?= BASE_URL ?>/Auth/logout" class="menu-link logout-btn">
-                    <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
+                    <i class="fa-solid fa-right-from-bracket"></i> <span>Cerrar Sesión</span>
                 </a>
             </nav>
         </aside>
