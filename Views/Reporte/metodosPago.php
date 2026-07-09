@@ -1,0 +1,91 @@
+<?php require_once "Views/Header.php"; ?>
+
+<div class="table-container-header">
+    <h3><i class="fa-solid fa-credit-card" style="color: var(--accent-gold);"></i> Métodos de Pago</h3>
+    <div class="actions-group">
+        <button type="button" class="btn btn-secondary" onclick="window.print()"><i class="fa-solid fa-print"></i> Imprimir</button>
+        <button type="button" class="btn btn-gold" id="btn_exportar_metodos"><i class="fa-solid fa-file-excel"></i> Exportar Excel</button>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: 20px;">
+    <div class="form-card-header">
+        <h3><i class="fa-solid fa-filter"></i> Filtros</h3>
+    </div>
+    <form method="GET" action="<?= BASE_URL ?>/Reporte/metodosPago" class="form-grid" style="padding-bottom: 15px;">
+        <div class="form-group col-4">
+            <label>Fecha Inicio</label>
+            <input type="date" name="desde" value="<?= e($filtros['desde'] ?? date('Y-m-01')) ?>">
+        </div>
+        <div class="form-group col-4">
+            <label>Fecha Fin</label>
+            <input type="date" name="hasta" value="<?= e($filtros['hasta'] ?? date('Y-m-d')) ?>">
+        </div>
+        <div class="form-group col-4" style="justify-content: flex-end;">
+            <button type="submit" class="btn btn-gold"><i class="fa-solid fa-magnifying-glass"></i> Filtrar</button>
+        </div>
+    </form>
+</div>
+
+<div class="dashboard-grid">
+    <div class="stat-card card gold-card">
+        <div class="card-body">
+            <div class="stat-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+            <div class="stat-details">
+                <h3>S/. <?= number_format(floatval($totalMontos ?? 0), 2) ?></h3>
+                <p>Total Recaudado</p>
+            </div>
+        </div>
+    </div>
+    <div class="stat-card card blue-card">
+        <div class="card-body">
+            <div class="stat-icon"><i class="fa-solid fa-receipt"></i></div>
+            <div class="stat-details">
+                <h3><?= intval($totalTransacciones ?? 0) ?></h3>
+                <p>Total Transacciones</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Método de Pago</th>
+                <th># Transacciones</th>
+                <th>Monto Total</th>
+                <th>% del Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (empty($metodos)): ?>
+            <tr><td colspan="5" style="text-align: center; padding: 20px;">No hay datos en el período.</td></tr>
+            <?php else: ?>
+            <?php foreach ($metodos as $i => $m): ?>
+            <tr>
+                <td><span class="badge-accent"><?= $i + 1 ?></span></td>
+                <td style="font-weight: 600;"><?= e($m['metodo_pago']) ?></td>
+                <td><?= intval($m['num_transacciones']) ?></td>
+                <td class="price-text">S/. <?= number_format(floatval($m['monto_total']), 2) ?></td>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="flex: 1; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+                            <div style="height: 100%; width: <?= $m['porcentaje'] ?>%; background: var(--accent-gold); border-radius: 4px;"></div>
+                        </div>
+                        <span style="font-size: 12px; font-weight: 600; min-width: 40px;"><?= $m['porcentaje'] ?>%</span>
+                    </div>
+                </td>
+            </tr>
+            <?php endforeach; ?>
+            <?php endif; ?>
+        </tbody>
+    </table>
+</div>
+
+<script>
+const exportParamsMetodos = <?= json_encode(array_filter($filtros ?? [], fn($v) => $v !== '')) ?>;
+</script>
+
+<?php require_once "Views/Footer.php"; ?>
