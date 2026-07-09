@@ -40,6 +40,8 @@
     </table>
 </div>
 
+<div id="paginacion_productos" class="pagination-container"></div>
+
 <script>
 const canEdit = <?= can('productos.editar') ? 'true' : 'false' ?>;
 const canDelete = <?= can('productos.eliminar') ? 'true' : 'false' ?>;

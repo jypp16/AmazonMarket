@@ -2,13 +2,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const tbody = document.getElementById('tabla_productos');
     const inputBusqueda = document.getElementById('busqueda_producto');
     const filtroCategoria = document.getElementById('filtro_categoria');
+    const paginacionDiv = document.getElementById('paginacion_productos');
 
     if (!tbody) return;
 
     let categorias = [];
     let unidades = [];
+    let paginaActual = 1;
+    const porPagina = 10;
+    let ultimaPaginaInfo = { page: 1, per_page: 10, total: 0, total_pages: 1 };
 
-    async function cargarProductos(busqueda = '', categoria = '') {
+    async function cargarProductos(busqueda, categoria, pagina) {
+        if (busqueda === undefined) busqueda = inputBusqueda ? inputBusqueda.value : '';
+        if (categoria === undefined) categoria = filtroCategoria ? filtroCategoria.value : '';
+        if (pagina === undefined) pagina = 1;
+        paginaActual = pagina;
+
         try {
             tbody.textContent = '';
             const trLoad = document.createElement('tr');
@@ -28,7 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const params = [];
             if (busqueda) params.push('q=' + encodeURIComponent(busqueda));
             if (categoria) params.push('categoria=' + encodeURIComponent(categoria));
-            if (params.length) endpoint += '?' + params.join('&');
+            params.push('page=' + paginaActual);
+            params.push('limit=' + porPagina);
+            endpoint += '?' + params.join('&');
 
             const inicio = Date.now();
             const resultado = await Api.get(endpoint);
@@ -40,10 +51,78 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            ultimaPaginaInfo = resultado.data.pagination || { page: 1, per_page: 10, total: 0, total_pages: 1 };
             renderizarTabla(resultado.data.data || []);
+            renderizarPaginacion();
         } catch (error) {
             mostrarError('Error de conexión: ' + error.message);
         }
+    }
+
+    function renderizarPaginacion() {
+        if (!paginacionDiv) return;
+        paginacionDiv.textContent = '';
+
+        const { page, per_page, total, total_pages } = ultimaPaginaInfo;
+        if (total_pages <= 1) return;
+
+        const info = document.createElement('span');
+        info.className = 'pag-info';
+        const inicio = (page - 1) * per_page + 1;
+        const fin = Math.min(page * per_page, total);
+        info.textContent = 'Mostrando ' + inicio + '-' + fin + ' de ' + total;
+        paginacionDiv.appendChild(info);
+
+        const btnGroup = document.createElement('div');
+        btnGroup.className = 'pag-btns';
+
+        const btnPrev = document.createElement('button');
+        btnPrev.type = 'button';
+        btnPrev.className = 'pag-btn';
+        btnPrev.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
+        btnPrev.disabled = page <= 1;
+        btnPrev.addEventListener('click', () => cargarProductos(undefined, undefined, page - 1));
+        btnGroup.appendChild(btnPrev);
+
+        const rango = calcularRango(page, total_pages);
+        rango.forEach(p => {
+            if (p === '...') {
+                const dots = document.createElement('span');
+                dots.className = 'pag-dots';
+                dots.textContent = '...';
+                btnGroup.appendChild(dots);
+            } else {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'pag-btn' + (p === page ? ' pag-active' : '');
+                btn.textContent = p;
+                btn.addEventListener('click', () => cargarProductos(undefined, undefined, p));
+                btnGroup.appendChild(btn);
+            }
+        });
+
+        const btnNext = document.createElement('button');
+        btnNext.type = 'button';
+        btnNext.className = 'pag-btn';
+        btnNext.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+        btnNext.disabled = page >= total_pages;
+        btnNext.addEventListener('click', () => cargarProductos(undefined, undefined, page + 1));
+        btnGroup.appendChild(btnNext);
+
+        paginacionDiv.appendChild(btnGroup);
+    }
+
+    function calcularRango(actual, total) {
+        if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+        const r = [];
+        r.push(1);
+        if (actual > 3) r.push('...');
+        for (let i = Math.max(2, actual - 1); i <= Math.min(total - 1, actual + 1); i++) {
+            r.push(i);
+        }
+        if (actual < total - 2) r.push('...');
+        r.push(total);
+        return r;
     }
 
     function renderizarTabla(productos) {
@@ -194,9 +273,11 @@ document.addEventListener('DOMContentLoaded', () => {
             endpoint: 'productos',
             method: 'POST',
             btnText: 'Guardar Producto',
+            width: '650px',
             onSuccess: () => cargarProductos(),
             onMount: aplicarRestriccionStock,
             campos: [
+                { name: 'imagen', label: 'Imagen del Producto', type: 'file', col: 'col-12', accept: 'image/jpeg,image/png,image/webp', hint: 'Opcional. JPG, PNG o WEBP (max 2MB). Se guarda con el código de barras.' },
                 { name: 'codigo_barra', label: 'Código de Barra', type: 'text', col: 'col-6', required: true, placeholder: 'Escriba o escanee el código' },
                 { name: 'nombre', label: 'Nombre del Producto', type: 'text', col: 'col-6', required: true, placeholder: 'Nombre comercial' },
                 { name: 'descripcion', label: 'Descripción', type: 'textarea', col: 'col-12', placeholder: 'Detalles del producto...' },
@@ -218,9 +299,11 @@ document.addEventListener('DOMContentLoaded', () => {
             id: prod.id_producto,
             method: 'PUT',
             btnText: 'Guardar Cambios',
+            width: '650px',
             onSuccess: () => cargarProductos(),
             onMount: aplicarRestriccionStock,
             campos: [
+                { name: 'imagen', label: 'Imagen del Producto', type: 'file', col: 'col-12', accept: 'image/jpeg,image/png,image/webp', hint: 'Opcional. Si sube una nueva imagen, reemplazará la actual.' },
                 { name: 'codigo_barra', label: 'Código de Barra', type: 'text', col: 'col-6', required: true, value: prod.codigo_barra },
                 { name: 'nombre', label: 'Nombre del Producto', type: 'text', col: 'col-6', required: true, value: prod.nombre },
                 { name: 'descripcion', label: 'Descripción', type: 'textarea', col: 'col-12', value: prod.descripcion },
