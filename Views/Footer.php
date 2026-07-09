@@ -16,10 +16,24 @@
     <script src="<?= BASE_URL ?>/Assets/js/clientes.js"></script>
     <script src="<?= BASE_URL ?>/Assets/js/usuarios.js"></script>
     <script src="<?= BASE_URL ?>/Assets/js/venta.js"></script>
+    <script src="<?= BASE_URL ?>/Assets/js/reportes.js"></script>
 
     <!-- Auto-ocultar alertas flash después de 4 segundos -->
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+        var sidebar = document.getElementById('sidebar');
+        var toggle = document.getElementById('sidebar_toggle');
+
+        if (sidebar && toggle) {
+            if (localStorage.getItem('sidebar_collapsed') === '1') {
+                sidebar.classList.add('collapsed');
+            }
+            toggle.addEventListener('click', function() {
+                sidebar.classList.toggle('collapsed');
+                localStorage.setItem('sidebar_collapsed', sidebar.classList.contains('collapsed') ? '1' : '0');
+            });
+        }
+
         const flashSuccess = document.getElementById('flash_success');
         const flashError = document.getElementById('flash_error');
         
