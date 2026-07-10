@@ -1,18 +1,17 @@
 <?php require_once "Views/Header.php"; ?>
 
 <div class="table-container-header">
-    <h3><i class="fa-solid fa-box-archive" style="color: var(--accent-gold);"></i> Productos Menos Vendidos / Sin Movimiento</h3>
+    <h3><i class="fa-solid fa-box-archive"></i> Productos Menos Vendidos / Sin Movimiento</h3>
     <div class="actions-group">
-        <button type="button" class="btn btn-secondary" onclick="window.print()"><i class="fa-solid fa-print"></i> Imprimir</button>
-        <button type="button" class="btn btn-gold" id="btn_exportar_menosVendidos"><i class="fa-solid fa-file-excel"></i> Exportar Excel</button>
+        <button type="button" class="btn btn-gold" id="btn_exportar_menosVendidos"><i class="fa-solid fa-file-pdf"></i> Exportar PDF</button>
     </div>
 </div>
 
-<div class="card" style="margin-bottom: 20px;">
+<div class="card margin-bottom-20">
     <div class="form-card-header">
         <h3><i class="fa-solid fa-filter"></i> Filtros</h3>
     </div>
-    <form method="GET" action="<?= BASE_URL ?>/Reporte/productosMenosVendidos" class="form-grid" style="padding-bottom: 15px;">
+    <form method="GET" action="<?= BASE_URL ?>/Reporte/productosMenosVendidos" class="form-grid form-pad-b">
         <div class="form-group col-3">
             <label>Fecha Inicio</label>
             <input type="date" name="desde" value="<?= e($filtros['desde'] ?? date('Y-m-01')) ?>">
@@ -34,7 +33,7 @@
             <label>Umbral (unidades ≤)</label>
             <input type="number" name="umbral" value="<?= e($filtros['umbral'] ?? 5) ?>" min="0" max="100">
         </div>
-        <div class="form-group col-1" style="justify-content: flex-end;">
+        <div class="form-group col-1 form-actions-end">
             <button type="submit" class="btn btn-gold"><i class="fa-solid fa-magnifying-glass"></i></button>
         </div>
     </form>
@@ -55,11 +54,11 @@
         </thead>
         <tbody>
             <?php if (empty($productos)): ?>
-            <tr><td colspan="7" style="text-align: center; padding: 20px;">Todos los productos tienen movimiento en el período.</td></tr>
+            <tr><td colspan="7" class="table-empty">Todos los productos tienen movimiento en el período.</td></tr>
             <?php else: ?>
             <?php foreach ($productos as $p): ?>
             <tr>
-                <td style="font-weight: 600;"><?= e($p['nombre']) ?></td>
+                <td class="cell-semibold"><?= e($p['nombre']) ?></td>
                 <td><span class="badge-neutral"><?= e($p['categoria']) ?></span></td>
                 <td>
                     <?php if ($p['stock_actual'] <= $p['stock_minimo']): ?>

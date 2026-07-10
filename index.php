@@ -57,6 +57,7 @@ if ($isApiRoute) {
         'pagos'         => 'MetodoPagoApiController',
         'tipos-documento' => 'TipoDocumentoApiController',
         'roles'         => 'RolApiController',
+        'reportes'      => 'ReporteApiController',
     ];
 
     $controller = $apiMap[$resource] ?? ucfirst($resource) . 'ApiController';

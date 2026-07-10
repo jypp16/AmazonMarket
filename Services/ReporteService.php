@@ -69,7 +69,7 @@ class ReporteService {
             'varIngresos' => $varIngresos,
             'boletas' => $boletas,
             'facturas' => $facturas,
-            'filtros' => $fechas,
+            'filtros' => $filtros,
         ];
     }
 
@@ -99,7 +99,7 @@ class ReporteService {
             'productos' => $resultado,
             'totalIngresos' => $totalIngresos,
             'totalUnidades' => $totalUnidades,
-            'filtros' => $fechas,
+            'filtros' => $filtros,
         ];
     }
 
@@ -114,7 +114,7 @@ class ReporteService {
 
         return [
             'productos' => $productos,
-            'filtros' => $fechas,
+            'filtros' => $filtros,
         ];
     }
 
@@ -138,7 +138,7 @@ class ReporteService {
         return [
             'clientes' => $clientes,
             'distribucion' => $distribucion,
-            'filtros' => $fechas,
+            'filtros' => array_merge($fechas, ['topN' => $topN]),
         ];
     }
 
@@ -221,7 +221,7 @@ class ReporteService {
             'montoBoletas' => $montoBoletas,
             'montoFacturas' => $montoFacturas,
             'igvFacturas' => $igvFacturas,
-            'filtros' => $fechas,
+            'filtros' => $filtros,
         ];
     }
 

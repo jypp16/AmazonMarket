@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tbody.textContent = '';
             const trLoad = document.createElement('tr');
             const tdLoad = document.createElement('td');
-            tdLoad.colSpan = 9;
+            tdLoad.colSpan = 8;
             tdLoad.style.textAlign = 'center';
             tdLoad.style.padding = '20px';
             tdLoad.style.color = '#888';
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (usuarios.length === 0) {
             const tr = document.createElement('tr');
             const td = document.createElement('td');
-            td.colSpan = 9;
+            td.colSpan = 8;
             td.textContent = 'No se encontraron usuarios.';
             td.style.textAlign = 'center';
             tr.appendChild(td);
@@ -55,9 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         usuarios.forEach(usu => {
             const fila = document.createElement('tr');
-
-            const celdaId = document.createElement('td');
-            celdaId.textContent = usu.id_usuario;
 
             const celdaRol = document.createElement('td');
             const badgeRol = document.createElement('span');
@@ -113,7 +110,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             celdaAcciones.appendChild(divAcciones);
-            fila.appendChild(celdaId);
             fila.appendChild(celdaRol);
             fila.appendChild(celdaUsername);
             fila.appendChild(celdaNombre);
@@ -198,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tbody.textContent = '';
         const tr = document.createElement('tr');
         const td = document.createElement('td');
-        td.colSpan = 9;
+        td.colSpan = 8;
         td.textContent = mensaje;
         td.style.textAlign = 'center';
         td.style.color = '#dc3545';

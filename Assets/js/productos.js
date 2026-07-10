@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tbody.textContent = '';
             const trLoad = document.createElement('tr');
             const tdLoad = document.createElement('td');
-            tdLoad.colSpan = 7;
+            tdLoad.colSpan = 6;
             tdLoad.style.textAlign = 'center';
             tdLoad.style.padding = '20px';
             tdLoad.style.color = '#888';
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (productos.length === 0) {
             const tr = document.createElement('tr');
             const td = document.createElement('td');
-            td.colSpan = 7;
+            td.colSpan = 6;
             td.textContent = 'No se encontraron productos.';
             td.style.textAlign = 'center';
             tr.appendChild(td);
@@ -141,9 +141,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         productos.forEach(prod => {
             const fila = document.createElement('tr');
-
-            const celdaId = document.createElement('td');
-            celdaId.textContent = prod.id_producto;
 
             const celdaCodigo = document.createElement('td');
             const badgeCodigo = document.createElement('span');
@@ -202,7 +199,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             celdaAcciones.appendChild(divAcciones);
-            fila.appendChild(celdaId);
             fila.appendChild(celdaCodigo);
             fila.appendChild(celdaNombre);
             fila.appendChild(celdaCategoria);
@@ -341,7 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tbody.textContent = '';
         const tr = document.createElement('tr');
         const td = document.createElement('td');
-        td.colSpan = 7;
+        td.colSpan = 6;
         td.textContent = mensaje;
         td.style.textAlign = 'center';
         td.style.color = '#dc3545';

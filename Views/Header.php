@@ -1,4 +1,5 @@
 <?php
+date_default_timezone_set('America/Lima');
 use Libraries\Middleware\RBACMiddleware;
 use Libraries\Middleware\CSRFMiddleware;
 
@@ -19,7 +20,7 @@ $slugs = array_column($permisos, 'slug');
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Hojas de Estilos Corporativas (Azul y Dorado) -->
     <link rel="stylesheet" href="<?= BASE_URL ?>/Assets/css/style.css">
-    <script>const BASE_URL = '<?= BASE_URL ?>'; const API_URL = '<?= API_URL ?>';</script>
+    <script>const BASE_URL = '<?= BASE_URL ?>'; const API_URL = '<?= API_URL ?>'; const VENDEDOR_NOMBRE = '<?= e($_SESSION['nombre'] ?? 'Operador') ?>';</script>
     <script src="<?= BASE_URL ?>/Assets/js/api.js"></script>
 </head>
 <body>

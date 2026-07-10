@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tbody.textContent = '';
             const trLoad = document.createElement('tr');
             const tdLoad = document.createElement('td');
-            tdLoad.colSpan = 8;
+            tdLoad.colSpan = 7;
             tdLoad.style.textAlign = 'center';
             tdLoad.style.padding = '20px';
             tdLoad.style.color = '#888';
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (clientes.length === 0) {
             const tr = document.createElement('tr');
             const td = document.createElement('td');
-            td.colSpan = 8;
+            td.colSpan = 7;
             td.textContent = 'No se encontraron clientes.';
             td.style.textAlign = 'center';
             tr.appendChild(td);
@@ -56,13 +56,10 @@ document.addEventListener('DOMContentLoaded', () => {
         clientes.forEach(cli => {
             const fila = document.createElement('tr');
 
-            const celdaId = document.createElement('td');
-            celdaId.textContent = cli.id_cliente;
-
             const celdaTipo = document.createElement('td');
             const badgeTipo = document.createElement('span');
             badgeTipo.className = 'document-badge';
-            badgeTipo.textContent = cli.tipo_documento || cli.id_tipo_documento || '-';
+            badgeTipo.textContent = cli.tipo_documento || '-';
             celdaTipo.appendChild(badgeTipo);
 
             const celdaDoc = document.createElement('td');
@@ -111,7 +108,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             celdaAcciones.appendChild(divAcciones);
-            fila.appendChild(celdaId);
             fila.appendChild(celdaTipo);
             fila.appendChild(celdaDoc);
             fila.appendChild(celdaNombre);
@@ -191,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tbody.textContent = '';
         const tr = document.createElement('tr');
         const td = document.createElement('td');
-        td.colSpan = 8;
+        td.colSpan = 7;
         td.textContent = mensaje;
         td.style.textAlign = 'center';
         td.style.color = '#dc3545';

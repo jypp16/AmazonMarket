@@ -1,45 +1,49 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-    function exportarCsv(tipo, params) {
+    function exportarPdf(tipo, params) {
         var query = Object.keys(params).map(function (k) { return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]); }).join('&');
-        var url = API_URL + '/reportes/exportar-csv?tipo=' + encodeURIComponent(tipo) + (query ? '&' + query : '');
+        var url = API_URL + '/reportes/exportar-pdf?tipo=' + encodeURIComponent(tipo) + (query ? '&' + query : '');
         window.location.href = url;
     }
 
     document.getElementById('btn_exportar_ventas')?.addEventListener('click', function () {
-        exportarCsv('ventas', typeof exportParamsVentas !== 'undefined' ? exportParamsVentas : {});
+        exportarPdf('ventas', typeof exportParamsVentas !== 'undefined' ? exportParamsVentas : {});
     });
 
     document.getElementById('btn_exportar_masVendidos')?.addEventListener('click', function () {
-        exportarCsv('productos-mas-vendidos', typeof exportParamsMasVendidos !== 'undefined' ? exportParamsMasVendidos : {});
+        exportarPdf('productos-mas-vendidos', typeof exportParamsMasVendidos !== 'undefined' ? exportParamsMasVendidos : {});
     });
 
     document.getElementById('btn_exportar_menosVendidos')?.addEventListener('click', function () {
-        exportarCsv('productos-menos-vendidos', typeof exportParamsMenosVendidos !== 'undefined' ? exportParamsMenosVendidos : {});
+        exportarPdf('productos-menos-vendidos', typeof exportParamsMenosVendidos !== 'undefined' ? exportParamsMenosVendidos : {});
     });
 
     document.getElementById('btn_exportar_inventario')?.addEventListener('click', function () {
-        exportarCsv('inventario', typeof exportParamsInventario !== 'undefined' ? exportParamsInventario : {});
+        exportarPdf('inventario', typeof exportParamsInventario !== 'undefined' ? exportParamsInventario : {});
     });
 
     document.getElementById('btn_exportar_clientes')?.addEventListener('click', function () {
-        exportarCsv('clientes', typeof exportParamsClientes !== 'undefined' ? exportParamsClientes : {});
+        exportarPdf('clientes', typeof exportParamsClientes !== 'undefined' ? exportParamsClientes : {});
     });
 
     document.getElementById('btn_exportar_vendedores')?.addEventListener('click', function () {
-        exportarCsv('vendedores', typeof exportParamsVendedores !== 'undefined' ? exportParamsVendedores : {});
+        exportarPdf('vendedores', typeof exportParamsVendedores !== 'undefined' ? exportParamsVendedores : {});
     });
 
     document.getElementById('btn_exportar_categorias')?.addEventListener('click', function () {
-        exportarCsv('categorias', typeof exportParamsCategorias !== 'undefined' ? exportParamsCategorias : {});
+        exportarPdf('categorias', typeof exportParamsCategorias !== 'undefined' ? exportParamsCategorias : {});
     });
 
     document.getElementById('btn_exportar_comprobantes')?.addEventListener('click', function () {
-        exportarCsv('comprobantes', typeof exportParamsComprobantes !== 'undefined' ? exportParamsComprobantes : {});
+        exportarPdf('comprobantes', typeof exportParamsComprobantes !== 'undefined' ? exportParamsComprobantes : {});
     });
 
     document.getElementById('btn_exportar_metodos')?.addEventListener('click', function () {
-        exportarCsv('metodos-pago', typeof exportParamsMetodos !== 'undefined' ? exportParamsMetodos : {});
+        exportarPdf('metodos-pago', typeof exportParamsMetodos !== 'undefined' ? exportParamsMetodos : {});
+    });
+
+    document.getElementById('btn_exportar_resumen')?.addEventListener('click', function () {
+        exportarPdf('resumen', typeof exportParamsResumen !== 'undefined' ? exportParamsResumen : {});
     });
 
     function renderLineChart(containerId, data, labelX, labelY) {

@@ -1,18 +1,17 @@
 <?php require_once "Views/Header.php"; ?>
 
 <div class="table-container-header">
-    <h3><i class="fa-solid fa-chart-line" style="color: var(--accent-gold);"></i> Ventas por Período</h3>
+    <h3><i class="fa-solid fa-chart-line"></i> Ventas por Período</h3>
     <div class="actions-group">
-        <button type="button" class="btn btn-secondary" onclick="window.print()"><i class="fa-solid fa-print"></i> Imprimir</button>
-        <button type="button" class="btn btn-gold" id="btn_exportar_ventas"><i class="fa-solid fa-file-excel"></i> Exportar Excel</button>
+        <button type="button" class="btn btn-gold" id="btn_exportar_ventas"><i class="fa-solid fa-file-pdf"></i> Exportar PDF</button>
     </div>
 </div>
 
-<div class="card" style="margin-bottom: 20px;">
+<div class="card margin-bottom-20">
     <div class="form-card-header">
         <h3><i class="fa-solid fa-filter"></i> Filtros</h3>
     </div>
-    <form method="GET" action="<?= BASE_URL ?>/Reporte/ventas" class="form-grid" style="padding-bottom: 15px;">
+    <form method="GET" action="<?= BASE_URL ?>/Reporte/ventas" class="form-grid form-pad-b">
         <div class="form-group col-3">
             <label>Fecha Inicio</label>
             <input type="date" name="desde" value="<?= e($filtros['desde'] ?? date('Y-m-01')) ?>">
@@ -57,7 +56,7 @@
                 <?php endforeach; ?>
             </select>
         </div>
-        <div class="form-group col-3" style="justify-content: flex-end;">
+        <div class="form-group col-3 form-actions-end">
             <button type="submit" class="btn btn-gold"><i class="fa-solid fa-magnifying-glass"></i> Filtrar</button>
         </div>
     </form>
@@ -102,11 +101,11 @@
     </div>
 </div>
 
-<div class="card" style="margin-bottom: 20px;">
+<div class="card margin-bottom-20">
     <div class="form-card-header">
         <h3><i class="fa-solid fa-chart-column"></i> Comprobantes: <?= $boletas ?> Boletas | <?= $facturas ?> Facturas</h3>
     </div>
-    <div style="padding: 20px;">
+    <div class="report-sub-card">
         <div id="chart_ventas_dia" class="chart-container" data-chart="line"></div>
     </div>
 </div>
@@ -126,7 +125,7 @@
         </thead>
         <tbody>
             <?php if (empty($ventas)): ?>
-            <tr><td colspan="7" style="text-align: center; padding: 20px;">No hay ventas en el período seleccionado.</td></tr>
+            <tr><td colspan="7" class="table-empty">No hay ventas en el período seleccionado.</td></tr>
             <?php else: ?>
             <?php foreach ($ventas as $v): ?>
             <tr>

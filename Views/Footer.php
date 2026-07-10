@@ -1,11 +1,11 @@
             </div> <!-- Cierre content-wrapper -->
+
+            <!-- Footer General -->
+            <footer class="app-footer">
+                <p>&copy; <?= date('Y') ?> <span class="gold-text">Amazon</span> Market - Todos los derechos reservados.</p>
+            </footer>
         </main> <!-- Cierre main-content -->
     </div> <!-- Cierre app-layout -->
-
-    <!-- Footer General -->
-    <footer class="app-footer">
-        <p>&copy; <?= date('Y') ?> <span class="gold-text">Amazon</span> Market - Todos los derechos reservados.</p>
-    </footer>
 
     <!-- Script de Alertas Modales -->
     <script src="<?= BASE_URL ?>/Assets/js/modal.js"></script>
