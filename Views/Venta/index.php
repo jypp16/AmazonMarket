@@ -1,164 +1,191 @@
 <?php require_once "Views/Header.php"; ?>
 
-<div class="pos-layout">
-    <div class="pos-left-panel">
-        <div class="form-container-card">
-            <div class="form-card-header">
-                <h3><i class="fa-solid fa-file-invoice"></i> Datos del Comprobante</h3>
+<div class="pos-app">
+    <!-- CATALOGO -->
+    <section class="pos-catalog">
+        <div class="pos-toolbar">
+            <div class="pos-search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="pos_search" placeholder="Buscar por nombre o código..." autocomplete="off">
             </div>
-            <div class="form-grid pad-15">
-                <div class="form-group col-12">
-                    <label for="id_cliente">Cliente <span class="required">*</span></label>
-                    <div class="input-with-icon">
-                        <i class="fa-solid fa-user"></i>
-                        <select id="id_cliente" required>
-                            <option value="">-- Cargando clientes... --</option>
-                        </select>
-                    </div>
-                    <small id="cliente-hint" style="color: var(--text-secondary); font-size: 12px; margin-top: 4px; display: none;">
-                        <i class="fa-solid fa-info-circle"></i> Para factura, seleccione un cliente con RUC.
-                    </small>
-                </div>
-
-                <div class="form-group col-6">
-                    <label for="id_tipo_comprobante">Comprobante <span class="required">*</span></label>
-                    <div class="input-with-icon">
-                        <i class="fa-solid fa-receipt"></i>
-                        <select id="id_tipo_comprobante" required>
-                            <option value="">-- Cargando... --</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group col-6">
-                    <label for="id_metodo_pago">Método de Pago <span class="required">*</span></label>
-                    <div class="input-with-icon">
-                        <i class="fa-solid fa-credit-card"></i>
-                        <select id="id_metodo_pago" required>
-                            <option value="">-- Cargando... --</option>
-                        </select>
-                    </div>
-                </div>
+            <div class="pos-cats-wrap">
+                <button type="button" class="pos-cats-arrow pos-cats-prev" id="pos_cats_prev"><i class="fa-solid fa-chevron-left"></i></button>
+                <div class="pos-cats" id="pos_cats"></div>
+                <button type="button" class="pos-cats-arrow pos-cats-next" id="pos_cats_next"><i class="fa-solid fa-chevron-right"></i></button>
             </div>
         </div>
-
-        <div class="form-container-card margin-top-20">
-            <div class="form-card-header">
-                <h3><i class="fa-solid fa-cart-plus"></i> Añadir Producto</h3>
-            </div>
-            <div class="form-grid pad-15">
-                <div class="form-group col-12">
-                    <label for="filtro_categoria_venta">Categoría</label>
-                    <div class="input-with-icon">
-                        <i class="fa-solid fa-filter"></i>
-                        <select id="filtro_categoria_venta" onchange="filtrarProductosVenta()">
-                            <option value="">Todas</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group col-12">
-                    <label for="select_producto">Producto <span class="required">*</span></label>
-                    <div class="input-with-icon">
-                        <i class="fa-solid fa-box-open"></i>
-                        <select id="select_producto" onchange="actualizarInfoProducto()">
-                            <option value="">-- Cargando productos... --</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group col-6">
-                    <label>Stock Disponible</label>
-                    <div class="info-badge-container">
-                        <span id="stock_info" class="badge-neutral"><i class="fa-solid fa-cubes"></i> --</span>
-                    </div>
-                </div>
-
-                <div class="form-group col-6">
-                    <label>Precio Unitario</label>
-                    <div class="info-badge-container">
-                        <span id="precio_info" class="badge-neutral"><i class="fa-solid fa-tags"></i> --</span>
-                    </div>
-                </div>
-
-                <div class="form-group col-8">
-                    <label for="cantidad_producto">Cantidad <span class="required">*</span></label>
-                    <div class="input-with-icon">
-                        <i class="fa-solid fa-calculator"></i>
-                        <input type="number" id="cantidad_producto" min="0.01" step="0.01" placeholder="0.00">
-                    </div>
-                </div>
-
-                <div class="form-group col-4" style="display: flex; align-items: flex-end;">
-                    <button type="button" class="btn btn-gold btn-full-width" onclick="agregarAlCarrito()">
-                        <i class="fa-solid fa-plus"></i> Agregar
-                    </button>
-                </div>
+        <div class="pos-shelf" id="pos_shelf">
+            <div class="pos-shelf-empty">
+                <i class="fa-solid fa-box-open"></i>
+                <p>Cargando productos...</p>
             </div>
         </div>
-    </div>
+    </section>
 
-    <div class="pos-right-panel">
-        <div class="form-container-card" style="height: 100%; display: flex; flex-direction: column;">
-            <div class="form-card-header">
-                <h3><i class="fa-solid fa-shopping-cart"></i> Detalle de la Venta</h3>
-                <span class="badge-accent" id="cart_count_badge">0 items</span>
-            </div>
-
-            <div class="cart-items-wrapper flex-grow-1">
-                <table class="table table-pos">
-                    <thead>
-                        <tr>
-                            <th>Producto</th>
-                            <th class="text-right">Precio</th>
-                            <th class="text-center" style="width: 100px;">Cant.</th>
-                            <th class="text-right">Subtotal</th>
-                            <th class="text-center" style="width: 50px;"></th>
-                        </tr>
-                    </thead>
-                    <tbody id="cart_body">
-                        <tr>
-                            <td colspan="5" class="text-center empty-cart-msg">
-                                <i class="fa-solid fa-basket-shopping"></i> El carrito está vacío. Agregue productos.
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="checkout-panel">
-                <div class="totals-summary">
-                    <div class="summary-row">
-                        <span>Subtotal (Sin IGV):</span>
-                        <span id="lbl_subtotal">S/. 0.00</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>IGV (18% Incluido):</span>
-                        <span id="lbl_igv">S/. 0.00</span>
-                    </div>
-                    <div class="summary-row total-highlight">
-                        <span>TOTAL A PAGAR:</span>
-                        <span id="lbl_total">S/. 0.00</span>
-                    </div>
+    <!-- CARRITO -->
+    <aside class="pos-cart" id="pos_cart">
+        <div class="pos-cart-top">
+            <div>
+                <div class="pos-cart-title">
+                    <i class="fa-solid fa-bag-shopping"></i>
+                    <span>Carrito</span>
+                    <span class="pos-cart-count" id="cart_count">0</span>
                 </div>
+                <div class="pos-cart-sub"><span id="cart_count_sub">0</span> artículos</div>
+            </div>
+            <button type="button" class="pos-cart-close" id="pos_cart_close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
 
-                <button type="button" class="btn btn-checkout btn-full-width margin-top-15" onclick="procesarVenta()">
-                    <i class="fa-solid fa-cash-register"></i> REGISTRAR Y PROCESAR VENTA
+        <div class="pos-cart-body">
+            <!-- Cliente -->
+            <div class="pos-client" id="pos_client">
+                <button type="button" class="pos-client-btn" id="pos_client_box">
+                    <span class="pos-client-ico"><i class="fa-solid fa-user"></i></span>
+                    <span class="pos-client-txt">
+                        <small>Cliente</small>
+                        <strong id="pos_client_name">Seleccionar cliente</strong>
+                    </span>
+                    <i class="fa-solid fa-chevron-down pos-client-chev"></i>
                 </button>
+                <div class="pos-client-sel" id="pos_client_sel">
+                    <span class="pos-client-avatar" id="pos_client_avatar">--</span>
+                    <span class="pos-client-meta">
+                        <strong id="pos_client_name2">--</strong>
+                        <small id="pos_client_doc">--</small>
+                    </span>
+                    <button type="button" class="pos-client-clear" id="pos_client_clear"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="pos-client-dd" id="pos_client_dd">
+                    <div class="pos-dd-search">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="pos_client_search" placeholder="Buscar nombre o documento..." autocomplete="off">
+                    </div>
+                    <div class="pos-dd-list" id="pos_client_results"></div>
+                    <button type="button" class="pos-dd-new" id="pos_client_new"><i class="fa-solid fa-user-plus"></i> Nuevo cliente</button>
+                </div>
+                <input type="hidden" id="id_cliente" value="">
             </div>
+
+            <!-- Comprobante / Pago -->
+            <div class="pos-paydoc" id="pos_paydoc">
+                <button type="button" class="pos-paydoc-btn active" data-target="id_tipo_comprobante" data-key="boleta">Boleta</button>
+                <button type="button" class="pos-paydoc-btn" data-target="id_tipo_comprobante" data-key="factura">Factura</button>
+                <button type="button" class="pos-paydoc-btn active" data-target="id_metodo_pago" data-key="efectivo">Efectivo</button>
+            </div>
+            <div class="pos-paydoc-fields">
+                <select id="id_tipo_comprobante"></select>
+                <select id="id_metodo_pago"></select>
+            </div>
+            <small id="cliente-hint" class="pos-hint"><i class="fa-solid fa-circle-info"></i> Para factura elija cliente con RUC.</small>
+
+            <!-- Lineas -->
+            <div class="pos-lines" id="pos_lines">
+                <div class="pos-lines-empty">
+                    <i class="fa-solid fa-basket-shopping"></i>
+                    <p>Carrito vacío</p>
+                    <small>Toca un producto para agregarlo</small>
+                </div>
+            </div>
+
+            <!-- Totales -->
+            <div class="pos-totals">
+                <div class="pos-total-taxes">
+                    <div>Subtotal <b id="lbl_subtotal">S/. 0.00</b></div>
+                    <div>IGV 18% <b id="lbl_igv">S/. 0.00</b></div>
+                </div>
+                <div class="pos-total-final">
+                    <span>TOTAL</span>
+                    <span id="lbl_total">S/. 0.00</span>
+                </div>
+            </div>
+
+            <!-- Efectivo -->
+            <div class="pos-cash">
+                <div class="pos-cash-row">
+                    <label class="pos-cash-label" for="monto_recibido"><i class="fa-solid fa-hand-holding-dollar"></i> Recibido</label>
+                    <div class="pos-cash-in">
+                        <span>S/.</span>
+                        <input type="number" id="monto_recibido" placeholder="0.00" step="0.01" min="0" inputmode="decimal">
+                    </div>
+                    <button type="button" class="pos-cash-exact" data-cash="exact">Exacto</button>
+                </div>
+                <div class="pos-change" id="vuelto_box">
+                    <span><i class="fa-solid fa-coins"></i> Vuelto</span>
+                    <strong id="lbl_vuelto">S/. 0.00</strong>
+                </div>
+                <div class="pos-cash-chips" id="pos_cash_chips">
+                    <button type="button" data-cash="10">S/10</button>
+                    <button type="button" data-cash="20">S/20</button>
+                    <button type="button" data-cash="50">S/50</button>
+                    <button type="button" data-cash="100">S/100</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="pos-cart-foot">
+            <button type="button" class="pos-btn-ghost" id="btn_vaciar" disabled><i class="fa-solid fa-trash-can"></i> Vaciar</button>
+            <button type="button" class="pos-btn-pay" id="btn_procesar"><i class="fa-solid fa-check"></i> Procesar</button>
+        </div>
+    </aside>
+
+    <!-- FAB mobile -->
+    <button type="button" class="pos-fab" id="pos_fab">
+        <i class="fa-solid fa-bag-shopping"></i>
+        <span class="pos-fab-badge" id="pos_fab_count">0</span>
+        <span class="pos-fab-total" id="pos_fab_total">S/. 0.00</span>
+    </button>
+</div>
+
+<!-- Modal nuevo cliente -->
+<div id="modal_cliente" class="pos-modal" style="display:none;">
+    <div class="pos-modal-card">
+        <div class="pos-modal-head">
+            <h3><i class="fa-solid fa-user-plus"></i> Nuevo cliente</h3>
+            <button type="button" class="pos-modal-x" id="btn_cerrar_modal_cli"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="pos-modal-body">
+            <div id="cli_form_error" class="pos-form-error" style="display:none;"></div>
+            <div class="pos-form-grid">
+                <div class="pos-field">
+                    <label>Tipo documento</label>
+                    <select id="nc_id_tipo_documento" class="pos-select"></select>
+                </div>
+                <div class="pos-field">
+                    <label>N° documento</label>
+                    <input type="text" id="nc_nro_documento" class="pos-input" placeholder="Número">
+                </div>
+                <div class="pos-field wide">
+                    <label>Nombre / Razón social</label>
+                    <input type="text" id="nc_nombre" class="pos-input" placeholder="Nombre completo">
+                </div>
+                <div class="pos-field">
+                    <label>Teléfono</label>
+                    <input type="text" id="nc_telefono" class="pos-input" placeholder="Opcional">
+                </div>
+                <div class="pos-field">
+                    <label>Dirección</label>
+                    <input type="text" id="nc_direccion" class="pos-input" placeholder="Opcional">
+                </div>
+            </div>
+        </div>
+        <div class="pos-modal-foot">
+            <button type="button" class="pos-btn-ghost" id="btn_cancelar_cli">Cancelar</button>
+            <button type="button" class="pos-btn-gold" id="btn_guardar_cli"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
         </div>
     </div>
 </div>
 
-<div id="loader_overlay" class="loader-overlay" style="display: none;">
+<!-- Loader -->
+<div id="loader_overlay" class="loader-overlay" style="display:none;">
     <div class="loader-content">
         <i class="fa-solid fa-circle-notch fa-spin fa-3x gold-text"></i>
-        <p class="margin-top-15">Procesando, espere por favor...</p>
+        <p class="margin-top-15">Procesando venta...</p>
     </div>
 </div>
 
 <script>
-    var BaseUrl = "<?= BASE_URL ?>";
+document.body.classList.add('pos-mode');
+var BaseUrl = "<?= BASE_URL ?>";
 </script>
 <script src="<?= BASE_URL ?>/Assets/js/venta.js"></script>
 

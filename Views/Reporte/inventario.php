@@ -1,10 +1,9 @@
 <?php require_once "Views/Header.php"; ?>
 
 <div class="table-container-header">
-    <h3><i class="fa-solid fa-warehouse" style="color: var(--accent-gold);"></i> Valor de Inventario y Stock Bajo</h3>
+    <h3><i class="fa-solid fa-warehouse"></i> Valor de Inventario y Stock Bajo</h3>
     <div class="actions-group">
-        <button type="button" class="btn btn-secondary" onclick="window.print()"><i class="fa-solid fa-print"></i> Imprimir</button>
-        <button type="button" class="btn btn-gold" id="btn_exportar_inventario"><i class="fa-solid fa-file-excel"></i> Exportar Excel</button>
+        <button type="button" class="btn btn-gold" id="btn_exportar_inventario"><i class="fa-solid fa-file-pdf"></i> Exportar PDF</button>
     </div>
 </div>
 
@@ -27,9 +26,9 @@
             </div>
         </div>
     </div>
-    <div class="stat-card card" style="border-left: 4px solid var(--color-danger);">
+    <div class="stat-card card danger-card">
         <div class="card-body">
-            <div class="stat-icon" style="background-color: var(--color-danger-light); color: var(--color-danger);"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
             <div class="stat-details">
                 <h3><?= intval($resumen['productos_stock_bajo'] ?? 0) ?></h3>
                 <p>Stock Bajo (Reabastecer)</p>
@@ -63,12 +62,12 @@
         </thead>
         <tbody>
             <?php if (empty($productos)): ?>
-            <tr><td colspan="8" style="text-align: center; padding: 20px;">No hay productos registrados.</td></tr>
+            <tr><td colspan="8" class="table-empty">No hay productos registrados.</td></tr>
             <?php else: ?>
             <?php foreach ($productos as $p): ?>
-            <tr style="<?= $p['stock_bajo'] ? 'background-color: #fef2f2;' : '' ?>">
+            <tr class="<?= $p['stock_bajo'] ? 'row-danger' : '' ?>">
                 <td><span class="barcode-badge"><?= e($p['codigo_barra']) ?></span></td>
-                <td style="font-weight: 600;"><?= e($p['nombre']) ?></td>
+                <td class="cell-semibold"><?= e($p['nombre']) ?></td>
                 <td><span class="badge-neutral"><?= e($p['categoria']) ?></span></td>
                 <td>
                     <?php if ($p['stock_bajo']): ?>
@@ -80,7 +79,7 @@
                 <td><?= number_format(floatval($p['stock_minimo']), 2) ?></td>
                 <td>
                     <?php $diff = floatval($p['stock_actual']) - floatval($p['stock_minimo']); ?>
-                    <span style="color: <?= $diff < 0 ? 'var(--color-danger)' : 'var(--color-success)' ?>; font-weight: 600;">
+                    <span class="cell-semibold" style="color: <?= $diff < 0 ? 'var(--color-danger)' : 'var(--color-success)' ?>;">
                         <?= $diff >= 0 ? '+' : '' ?><?= number_format($diff, 2) ?>
                     </span>
                 </td>

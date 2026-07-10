@@ -1,18 +1,17 @@
 <?php require_once "Views/Header.php"; ?>
 
 <div class="table-container-header">
-    <h3><i class="fa-solid fa-fire" style="color: var(--accent-gold);"></i> Productos Más Vendidos</h3>
+    <h3><i class="fa-solid fa-fire"></i> Productos Más Vendidos</h3>
     <div class="actions-group">
-        <button type="button" class="btn btn-secondary" onclick="window.print()"><i class="fa-solid fa-print"></i> Imprimir</button>
-        <button type="button" class="btn btn-gold" id="btn_exportar_masVendidos"><i class="fa-solid fa-file-excel"></i> Exportar Excel</button>
+        <button type="button" class="btn btn-gold" id="btn_exportar_masVendidos"><i class="fa-solid fa-file-pdf"></i> Exportar PDF</button>
     </div>
 </div>
 
-<div class="card" style="margin-bottom: 20px;">
+<div class="card margin-bottom-20">
     <div class="form-card-header">
         <h3><i class="fa-solid fa-filter"></i> Filtros</h3>
     </div>
-    <form method="GET" action="<?= BASE_URL ?>/Reporte/productosMasVendidos" class="form-grid" style="padding-bottom: 15px;">
+    <form method="GET" action="<?= BASE_URL ?>/Reporte/productosMasVendidos" class="form-grid form-pad-b">
         <div class="form-group col-3">
             <label>Fecha Inicio</label>
             <input type="date" name="desde" value="<?= e($filtros['desde'] ?? date('Y-m-01')) ?>">
@@ -38,7 +37,7 @@
                 <option value="50" <?= ($filtros['topN'] ?? '') == 50 ? 'selected' : '' ?>>Top 50</option>
             </select>
         </div>
-        <div class="form-group col-1" style="justify-content: flex-end;">
+        <div class="form-group col-1 form-actions-end">
             <button type="submit" class="btn btn-gold"><i class="fa-solid fa-magnifying-glass"></i></button>
         </div>
     </form>
@@ -88,21 +87,21 @@
         </thead>
         <tbody>
             <?php if (empty($productos)): ?>
-            <tr><td colspan="6" style="text-align: center; padding: 20px;">No hay datos en el período seleccionado.</td></tr>
+            <tr><td colspan="6" class="table-empty">No hay datos en el período seleccionado.</td></tr>
             <?php else: ?>
             <?php foreach ($productos as $i => $p): ?>
             <tr>
                 <td><span class="badge-accent"><?= $i + 1 ?></span></td>
-                <td style="font-weight: 600;"><?= e($p['nombre']) ?></td>
+                <td class="cell-semibold"><?= e($p['nombre']) ?></td>
                 <td><span class="badge-neutral"><?= e($p['categoria']) ?></span></td>
                 <td><?= intval($p['unidades_vendidas']) ?></td>
                 <td class="price-text">S/. <?= number_format(floatval($p['ingresos']), 2) ?></td>
                 <td>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div style="flex: 1; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
-                            <div style="height: 100%; width: <?= $p['porcentaje_ingresos'] ?>%; background: var(--accent-gold); border-radius: 4px;"></div>
+                    <div class="progress-row">
+                        <div class="progress-track">
+                            <div class="progress-fill" style="width: <?= $p['porcentaje_ingresos'] ?>%;"></div>
                         </div>
-                        <span style="font-size: 12px; font-weight: 600; min-width: 40px;"><?= $p['porcentaje_ingresos'] ?>%</span>
+                        <span class="progress-label"><?= $p['porcentaje_ingresos'] ?>%</span>
                     </div>
                 </td>
             </tr>

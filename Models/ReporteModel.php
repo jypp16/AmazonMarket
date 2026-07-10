@@ -105,9 +105,8 @@ class ReporteModel extends Model {
             ->selectRaw('COALESCE(SUM(dv.cantidad), 0) AS unidades_vendidas, COALESCE(SUM(dv.subtotal), 0) AS ingresos')
             ->join('categoria cat', 'p.id_categoria = cat.id_categoria')
             ->leftJoin('detalle_venta dv', 'p.id_producto = dv.id_producto')
-            ->leftJoin('venta v', 'dv.id_venta = v.id_venta AND v.estado = 1')
+            ->leftJoin('venta v', "dv.id_venta = v.id_venta AND v.estado = 1 AND DATE(v.fecha_venta) BETWEEN '{$filtros['desde']}' AND '{$filtros['hasta']}'")
             ->where(['p.estado' => 1])
-            ->whereBetween('DATE(v.fecha_venta)', $filtros['desde'], $filtros['hasta'])
             ->when(!empty($filtros['id_categoria']), function($q) use ($filtros) {
                 return $q->where(['p.id_categoria' => intval($filtros['id_categoria'])]);
             })
@@ -233,12 +232,9 @@ class ReporteModel extends Model {
     }
 
     public function obtenerActivos(string $tabla, string $pk, string $campoNombre): array {
-        $model = new static();
-        $model->table = $tabla;
-        $model->primaryKey = $pk;
-        return $model->select([$pk, $campoNombre])
-            ->where(['estado' => 1])
-            ->orderBy($campoNombre, 'ASC')
-            ->get();
+        $sql = "SELECT `$pk`, `$campoNombre` FROM `$tabla` WHERE `estado` = 1 ORDER BY `$campoNombre` ASC";
+        $stmt = $this->conect()->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 }

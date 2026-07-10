@@ -1,18 +1,17 @@
 <?php require_once "Views/Header.php"; ?>
 
 <div class="table-container-header">
-    <h3><i class="fa-solid fa-tags" style="color: var(--accent-gold);"></i> Ventas por Categoría</h3>
+    <h3><i class="fa-solid fa-tags"></i> Ventas por Categoría</h3>
     <div class="actions-group">
-        <button type="button" class="btn btn-secondary" onclick="window.print()"><i class="fa-solid fa-print"></i> Imprimir</button>
-        <button type="button" class="btn btn-gold" id="btn_exportar_categorias"><i class="fa-solid fa-file-excel"></i> Exportar Excel</button>
+        <button type="button" class="btn btn-gold" id="btn_exportar_categorias"><i class="fa-solid fa-file-pdf"></i> Exportar PDF</button>
     </div>
 </div>
 
-<div class="card" style="margin-bottom: 20px;">
+<div class="card margin-bottom-20">
     <div class="form-card-header">
         <h3><i class="fa-solid fa-filter"></i> Filtros</h3>
     </div>
-    <form method="GET" action="<?= BASE_URL ?>/Reporte/categorias" class="form-grid" style="padding-bottom: 15px;">
+    <form method="GET" action="<?= BASE_URL ?>/Reporte/categorias" class="form-grid form-pad-b">
         <div class="form-group col-4">
             <label>Fecha Inicio</label>
             <input type="date" name="desde" value="<?= e($filtros['desde'] ?? date('Y-m-01')) ?>">
@@ -21,7 +20,7 @@
             <label>Fecha Fin</label>
             <input type="date" name="hasta" value="<?= e($filtros['hasta'] ?? date('Y-m-d')) ?>">
         </div>
-        <div class="form-group col-4" style="justify-content: flex-end;">
+        <div class="form-group col-4 form-actions-end">
             <button type="submit" class="btn btn-gold"><i class="fa-solid fa-magnifying-glass"></i> Filtrar</button>
         </div>
     </form>
@@ -57,7 +56,7 @@
     </div>
 </div>
 
-<div id="chart_categorias_barras" class="chart-container" style="margin-bottom: 20px;"></div>
+<div id="chart_categorias_barras" class="chart-container margin-bottom-20"></div>
 
 <div class="table-responsive">
     <table class="table">
@@ -72,20 +71,20 @@
         </thead>
         <tbody>
             <?php if (empty($categorias)): ?>
-            <tr><td colspan="5" style="text-align: center; padding: 20px;">No hay datos en el período.</td></tr>
+            <tr><td colspan="5" class="table-empty">No hay datos en el período.</td></tr>
             <?php else: ?>
             <?php foreach ($categorias as $i => $c): ?>
             <tr>
                 <td><span class="badge-accent"><?= $i + 1 ?></span></td>
-                <td style="font-weight: 600;"><?= e($c['categoria']) ?></td>
+                <td class="cell-semibold"><?= e($c['categoria']) ?></td>
                 <td><?= intval($c['unidades']) ?></td>
                 <td class="price-text">S/. <?= number_format(floatval($c['ingresos']), 2) ?></td>
                 <td>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div style="flex: 1; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
-                            <div style="height: 100%; width: <?= $c['porcentaje'] ?>%; background: var(--accent-gold); border-radius: 4px;"></div>
+                    <div class="progress-row">
+                        <div class="progress-track">
+                            <div class="progress-fill" style="width: <?= $c['porcentaje'] ?>%;"></div>
                         </div>
-                        <span style="font-size: 12px; font-weight: 600; min-width: 40px;"><?= $c['porcentaje'] ?>%</span>
+                        <span class="progress-label"><?= $c['porcentaje'] ?>%</span>
                     </div>
                 </td>
             </tr>
