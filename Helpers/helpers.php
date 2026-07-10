@@ -41,3 +41,17 @@ if (!function_exists('canAny')) {
         return \Libraries\Middleware\RBACMiddleware::tieneAlgunPermiso($_SESSION['rol'], $slugs);
     }
 }
+
+if (!function_exists('guardar_imagen_producto')) {
+    function guardar_imagen_producto(array $file, string $codigoBarra): array {
+        $storage = new \Services\StorageService();
+        return $storage->guardarImagen($file, $codigoBarra);
+    }
+}
+
+if (!function_exists('renombrar_imagen_producto')) {
+    function renombrar_imagen_producto(string $oldCodigo, string $newCodigo): void {
+        $storage = new \Services\StorageService();
+        $storage->renombrarImagen($oldCodigo, $newCodigo);
+    }
+}
