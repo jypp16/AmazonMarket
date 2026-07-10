@@ -4,6 +4,7 @@
     <h3><i class="fa-solid fa-user-tie"></i> Ventas por Vendedor</h3>
     <div class="actions-group">
         <button type="button" class="btn btn-gold" id="btn_exportar_vendedores"><i class="fa-solid fa-file-pdf"></i> Exportar PDF</button>
+        <button type="button" class="btn btn-outline-success" id="btn_excel_vendedores"><i class="fa-solid fa-file-excel"></i> Exportar Excel</button>
     </div>
 </div>
 

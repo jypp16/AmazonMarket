@@ -11,6 +11,7 @@ spl_autoload_register(function ($class) {
         $baseDir . 'Libraries/Core/',
         $baseDir . 'Libraries/Middleware/',
         $baseDir . 'Libraries/Mailer/',
+        $baseDir . 'Libraries/Excel/',
         $baseDir . 'Controllers/',
         $baseDir . 'Models/',
         $baseDir . 'Services/',

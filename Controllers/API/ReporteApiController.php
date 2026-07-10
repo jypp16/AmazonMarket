@@ -57,6 +57,10 @@ class ReporteApiController extends ApiController {
                 $this->requirePermission('reportes.exportar');
                 $this->exportarPdf($input);
                 break;
+            case 'exportar-excel':
+                $this->requirePermission('reportes.exportar');
+                $this->exportarExcel($input);
+                break;
             default:
                 $this->sendJsonResponse(['status' => false, 'message' => 'Tipo de reporte no válido.'], 400);
         }
@@ -117,6 +121,67 @@ class ReporteApiController extends ApiController {
         $desde = $input['desde'] ?? date('Y-m-01');
         $hasta = $input['hasta'] ?? date('Y-m-d');
         return date('d/m/Y', strtotime($desde)) . ' al ' . date('d/m/Y', strtotime($hasta));
+    }
+
+    private function exportarExcel(array $input): void {
+        $tipo = $input['tipo'] ?? '';
+        $excelService = new \Services\ExcelService();
+
+        switch ($tipo) {
+            case 'ventas':
+                $data = $this->service->reporteVentas($input);
+                $file = $excelService->generarVentas($data, $input);
+                break;
+            case 'productos-mas-vendidos':
+                $data = $this->service->reporteProductosMasVendidos($input);
+                $file = $excelService->generarProductosMasVendidos($data, $input);
+                break;
+            case 'productos-menos-vendidos':
+                $data = $this->service->reporteProductosMenosVendidos($input);
+                $file = $excelService->generarProductosMenosVendidos($data, $input);
+                break;
+            case 'inventario':
+                $data = $this->service->reporteInventario();
+                $file = $excelService->generarInventario($data);
+                break;
+            case 'clientes':
+                $data = $this->service->reporteClientes($input);
+                $file = $excelService->generarClientes($data, $input);
+                break;
+            case 'vendedores':
+                $data = $this->service->reporteVendedores($input);
+                $file = $excelService->generarVendedores($data, $input);
+                break;
+            case 'categorias':
+                $data = $this->service->reporteCategorias($input);
+                $file = $excelService->generarCategorias($data, $input);
+                break;
+            case 'comprobantes':
+                $data = $this->service->reporteComprobantes($input);
+                $file = $excelService->generarComprobantes($data, $input);
+                break;
+            case 'metodos-pago':
+                $data = $this->service->reporteMetodosPago($input);
+                $file = $excelService->generarMetodosPago($data, $input);
+                break;
+            case 'resumen':
+                $data = $this->service->reporteResumen($input);
+                $file = $excelService->generarResumen($data, $input);
+                break;
+            default:
+                http_response_code(400);
+                echo json_encode(['status' => false, 'message' => 'Tipo de reporte no válido.']);
+                return;
+        }
+
+        $filename = 'Reporte_' . $tipo . '_' . date('Y-m-d_His') . '.xlsx';
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Content-Length: ' . filesize($file));
+        header('Cache-Control: no-cache, must-revalidate');
+        readfile($file);
+        unlink($file);
+        exit;
     }
 
     private function generarPdfVentas($pdf, array $input): void {

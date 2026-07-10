@@ -4,6 +4,7 @@
     <h3><i class="fa-solid fa-box-archive"></i> Productos Menos Vendidos / Sin Movimiento</h3>
     <div class="actions-group">
         <button type="button" class="btn btn-gold" id="btn_exportar_menosVendidos"><i class="fa-solid fa-file-pdf"></i> Exportar PDF</button>
+        <button type="button" class="btn btn-outline-success" id="btn_excel_menosVendidos"><i class="fa-solid fa-file-excel"></i> Exportar Excel</button>
     </div>
 </div>
 
