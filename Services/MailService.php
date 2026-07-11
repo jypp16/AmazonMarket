@@ -66,6 +66,21 @@ class MailService {
         return $this->mailer->send();
     }
 
+    public function enviarReporteVentas(string $email, string $nombreVendedor, array $input = []): bool {
+        $reporteService = new ReporteService();
+        $data = $reporteService->reporteResumen($input);
+        $ventas = $data['ventas'] ?? [];
+        $resumen = $ventas['resumen'] ?? [];
+        $masVendidos = $data['masVendidos']['productos'] ?? [];
+        $productoTop = !empty($masVendidos) ? $masVendidos[0]['nombre'] : 'Sin datos';
+
+        return $this->enviarReporteDiario($email, $nombreVendedor, [
+            'total_ventas' => $resumen['total_ventas'] ?? 0,
+            'total_ingresos' => number_format($resumen['total_ingresos'] ?? 0, 2),
+            'producto_top' => $productoTop,
+        ]);
+    }
+
     public function enviar(string $email, string $asunto, string $mensajeHtml): bool {
         $this->mailer->reset();
         $this->mailer->to($email);
