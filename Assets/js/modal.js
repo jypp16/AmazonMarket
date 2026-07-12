@@ -22,6 +22,7 @@ const Modal = {
 
             const overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
+            overlay.setAttribute('data-modal-dynamic', 'alert');
 
             const container = document.createElement('div');
             container.className = 'modal-container modal-alert';
@@ -95,6 +96,7 @@ const Modal = {
 
             const overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
+            overlay.setAttribute('data-modal-dynamic', 'confirm');
 
             const container = document.createElement('div');
             container.className = 'modal-container modal-confirm';
@@ -177,7 +179,7 @@ const Modal = {
     },
 
     _close() {
-        const overlay = document.querySelector('.modal-overlay');
+        const overlay = document.querySelector('.modal-overlay[data-modal-dynamic]');
         if (overlay) {
             overlay.classList.remove('modal-active');
             setTimeout(() => overlay.remove(), 300);

@@ -40,7 +40,9 @@ public function get(?string $params = ''): void
     {
         if (!empty($id)) {
             $cliente = $this->clienteModel
-                ->where(['id_cliente' => (int)$id, 'estado = 1'])
+                ->select(['cliente.*', 'tipo_documento.nombre as tipo_documento'])
+                ->join('tipo_documento', 'cliente.id_tipo_documento = tipo_documento.id_tipo_documento', 'INNER')
+                ->where(['id_cliente' => (int)$id, 'cliente.estado = 1'])
                 ->first();
 
             if (!$cliente) {
@@ -51,18 +53,21 @@ public function get(?string $params = ''): void
         } else {
             $search = $this->getParam('q', '');
 
-            $query = $this->clienteModel->where(['estado = 1']);
+            $query = $this->clienteModel
+                ->select(['cliente.*', 'tipo_documento.nombre as tipo_documento'])
+                ->join('tipo_documento', 'cliente.id_tipo_documento = tipo_documento.id_tipo_documento', 'INNER')
+                ->where(['cliente.estado = 1']);
 
             if (!empty($search)) {
                 $query->orLikeWhere([
-                    'nombre' => $search,
-                    'nro_documento' => $search,
-                    'telefono' => $search,
-                    'email' => $search
+                    'cliente.nombre' => $search,
+                    'cliente.nro_documento' => $search,
+                    'cliente.telefono' => $search,
+                    'cliente.email' => $search
                 ], 'cli_search_');
             }
 
-            $clientes = $query->orderBy('nombre', 'ASC')->get();
+            $clientes = $query->orderBy('cliente.nombre', 'ASC')->get();
 
             $this->sendJsonResponse(['status' => true, 'data' => $clientes]);
         }
