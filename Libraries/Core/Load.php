@@ -13,6 +13,11 @@ if (!class_exists($controllerClass)) {
 if (class_exists($controllerClass)) {
     $controllerObject = new $controllerClass();
 
+    // Para rutas API: re-leer el verbo HTTP real (respeta _method override en multipart/form-data)
+    if ($isApiRoute) {
+        $method = strtolower($controllerObject->requestMethod);
+    }
+
     // Whitelist: sólo enrutar métodos públicos declarados explícitamente por el
     // controlador (no heredados de las clases base Controller/ApiController).
     // Esto evita invocar helpers internos expuestos como públicos.
