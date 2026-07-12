@@ -19,9 +19,7 @@ const ModalForm = {
         const closeBtn = document.createElement('button');
         closeBtn.type = 'button';
         closeBtn.className = 'modal-close-btn';
-        const closeIcon = document.createElement('i');
-        closeIcon.className = 'fa-solid fa-xmark';
-        closeBtn.appendChild(closeIcon);
+        closeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
         closeBtn.addEventListener('click', () => this._close());
         header.appendChild(closeBtn);
 
@@ -101,10 +99,7 @@ const ModalForm = {
         const submitBtn = document.createElement('button');
         submitBtn.type = 'submit';
         submitBtn.className = 'btn btn-gold';
-        const submitIcon = document.createElement('i');
-        submitIcon.className = 'fa-solid fa-floppy-disk';
-        submitBtn.appendChild(submitIcon);
-        submitBtn.appendChild(document.createTextNode(' ' + (config.btnText || 'Guardar')));
+        submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> ' + (config.btnText || 'Guardar');
         actions.appendChild(submitBtn);
 
         const cancelBtn = document.createElement('button');
@@ -119,11 +114,7 @@ const ModalForm = {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             submitBtn.disabled = true;
-            submitBtn.textContent = '';
-            const spinIcon = document.createElement('i');
-            spinIcon.className = 'fa-solid fa-spinner fa-spin';
-            submitBtn.appendChild(spinIcon);
-            submitBtn.appendChild(document.createTextNode(' Guardando...'));
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
             errorDiv.style.display = 'none';
 
             try {
@@ -152,21 +143,13 @@ const ModalForm = {
                     errorDiv.textContent = msg;
                     errorDiv.style.display = 'block';
                     submitBtn.disabled = false;
-                    submitBtn.textContent = '';
-                    const errIcon = document.createElement('i');
-                    errIcon.className = 'fa-solid fa-floppy-disk';
-                    submitBtn.appendChild(errIcon);
-                    submitBtn.appendChild(document.createTextNode(' ' + (config.btnText || 'Guardar')));
+                    submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> ' + (config.btnText || 'Guardar');
                 }
             } catch (err) {
                 errorDiv.textContent = 'Error de conexión: ' + err.message;
                 errorDiv.style.display = 'block';
                 submitBtn.disabled = false;
-                submitBtn.textContent = '';
-                const catchIcon = document.createElement('i');
-                catchIcon.className = 'fa-solid fa-floppy-disk';
-                submitBtn.appendChild(catchIcon);
-                submitBtn.appendChild(document.createTextNode(' ' + (config.btnText || 'Guardar')));
+                submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> ' + (config.btnText || 'Guardar');
             }
         });
 

@@ -14,7 +14,11 @@ class ProductoApiController extends ApiController {
     }
 
     public function post(?string $params = ""): void {
-        $this->createProducto();
+        if (!empty($params)) {
+            $this->uploadImage($params);
+        } else {
+            $this->createProducto();
+        }
     }
 
     public function put(?string $params = ""): void {
@@ -43,6 +47,8 @@ class ProductoApiController extends ApiController {
             $search = $this->getParam('q', '');
             $categoria = $this->getParam('categoria', '');
             $stock = $this->getParam('stock', '');
+            $page = max(1, intval($this->getParam('page', 1)));
+            $limit = min(50, max(1, intval($this->getParam('limit', 10))));
 
             $query = $this->model
                 ->select(['producto.*', 'categoria.nombre as categoria', 'unidad_medida.abreviatura as unidad'])
@@ -63,8 +69,23 @@ class ProductoApiController extends ApiController {
                 $query->where(['producto.stock_actual <= producto.stock_minimo']);
             }
 
-            $productos = $query->orderBy('producto.nombre', 'ASC')->get();
-            $this->sendJsonResponse(['status' => true, 'data' => $productos]);
+            $total = $query->countWithQuery();
+            $totalPaginas = max(1, ceil($total / $limit));
+            if ($page > $totalPaginas) $page = $totalPaginas;
+
+            $offset = ($page - 1) * $limit;
+            $productos = $query->orderBy('producto.nombre', 'ASC')->limit($limit)->offset($offset)->get();
+
+            $this->sendJsonResponse([
+                'status' => true,
+                'data' => $productos,
+                'pagination' => [
+                    'page' => $page,
+                    'per_page' => $limit,
+                    'total' => $total,
+                    'total_pages' => $totalPaginas
+                ]
+            ]);
         }
     }
 
@@ -119,6 +140,12 @@ class ProductoApiController extends ApiController {
         $exito = $this->model->insert($productoData);
 
         if ($exito) {
+            if (!empty($_FILES['imagen']) && $_FILES['imagen']['error'] !== UPLOAD_ERR_NO_FILE) {
+                $img = guardar_imagen_producto($_FILES['imagen'], trim($data['codigo_barra']));
+                if (!$img['ok'] && $img['message'] !== 'No se envió archivo.') {
+                    $this->sendJsonResponse(['status' => true, 'message' => 'Producto registrado, pero la imagen no se guardó: ' . $img['message']], 201);
+                }
+            }
             $this->sendJsonResponse(['status' => true, 'message' => 'Producto registrado exitosamente'], 201);
         } else {
             $this->sendJsonResponse(['status' => false, 'message' => 'Ocurrió un error interno en el servidor'], 500);
@@ -183,9 +210,33 @@ class ProductoApiController extends ApiController {
         $exito = $this->model->update($idVal, $datosActualizar);
 
         if ($exito) {
+            if (isset($data['codigo_barra']) && $productoExistente['codigo_barra'] !== trim($data['codigo_barra'])) {
+                renombrar_imagen_producto($productoExistente['codigo_barra'], trim($data['codigo_barra']));
+            }
             $this->sendJsonResponse(['status' => true, 'message' => 'Producto actualizado de forma exitosa']);
         } else {
             $this->sendJsonResponse(['status' => false, 'message' => 'No se pudo actualizar el registro en el servidor'], 500);
+        }
+    }
+
+    private function uploadImage(?string $id): void {
+        $this->requirePermission('productos.editar');
+        $idVal = intval($id);
+        $producto = $this->model->find($idVal);
+
+        if (!$producto || $producto['estado'] != 1) {
+            $this->sendJsonResponse(['status' => false, 'message' => 'El producto no existe'], 404);
+        }
+
+        if (empty($_FILES['imagen']) || $_FILES['imagen']['error'] === UPLOAD_ERR_NO_FILE) {
+            $this->sendJsonResponse(['status' => false, 'message' => 'No se envió ninguna imagen'], 400);
+        }
+
+        $img = guardar_imagen_producto($_FILES['imagen'], trim($producto['codigo_barra']));
+        if ($img['ok']) {
+            $this->sendJsonResponse(['status' => true, 'message' => 'Imagen actualizada correctamente']);
+        } else {
+            $this->sendJsonResponse(['status' => false, 'message' => $img['message']], 400);
         }
     }
 
