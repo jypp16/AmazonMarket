@@ -112,7 +112,7 @@ AmazonMarket/
 │   └── ...
 ├── index.php           # Front controller / Router
 ├── .env.example
-└── amazon_market_completo.sql
+└── amazon_market.sql
 ```
 
 ## Arquitectura
