@@ -6,7 +6,7 @@ abstract class ApiController {
 
     protected $model;
     protected array $requestHeaders = [];
-    protected string $requestMethod;
+    public string $requestMethod;
     protected ?array $requestBody = null;
     protected ?int $authenticatedUserId = null;
 

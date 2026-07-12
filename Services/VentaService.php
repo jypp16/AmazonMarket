@@ -125,17 +125,35 @@ class VentaService {
                 $detalles[] = $resultado['detalle'];
             }
 
-            // Crear venta — buscar serie por nombre del comprobante, no hardcodear
-            $serieStmt = $this->pdo->prepare("SELECT serie FROM tipo_comprobante WHERE id_tipo_comprobante = :id AND estado = 1 LIMIT 1");
+            // Crear venta — la serie y el correlativo viven en serie_comprobante,
+            // una fila por tipo de comprobante. SELECT ... FOR UPDATE bloquea
+            // esa fila específica dentro de la transacción, evitando que dos
+            // ventas concurrentes obtengan el mismo número (race condition).
+            $serieStmt = $this->pdo->prepare(
+                "SELECT id_serie, serie, correlativo_actual
+                 FROM serie_comprobante
+                 WHERE id_tipo_comprobante = :id AND estado = 1
+                 LIMIT 1 FOR UPDATE"
+            );
             $serieStmt->execute([':id' => $id_tipo_comprobante]);
-            $serie = $serieStmt->fetchColumn() ?: 'B001';
-            // Generar número correlativo por serie. SELECT ... FOR UPDATE bloquea
-            // las filas leídas dentro de la transacción, evitando que dos ventas
-            // concurrentes obtengan el mismo número (race condition).
-            $numStmt = $this->pdo->prepare("SELECT MAX(CAST(numero AS UNSIGNED)) AS max_num FROM venta WHERE serie = :serie FOR UPDATE");
-            $numStmt->execute([':serie' => $serie]);
-            $maxNum = (int) $numStmt->fetchColumn();
-            $numero = str_pad($maxNum + 1, 8, "0", STR_PAD_LEFT);
+            $serieRow = $serieStmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$serieRow) {
+                $this->pdo->rollBack();
+                return ['status' => false, 'message' => 'No hay una serie configurada para este tipo de comprobante.'];
+            }
+
+            $serie = $serieRow['serie'];
+            $siguienteCorrelativo = (int) $serieRow['correlativo_actual'] + 1;
+            $numero = str_pad($siguienteCorrelativo, 8, "0", STR_PAD_LEFT);
+
+            $updateSerieStmt = $this->pdo->prepare(
+                "UPDATE serie_comprobante SET correlativo_actual = :nuevo WHERE id_serie = :id_serie"
+            );
+            $updateSerieStmt->execute([
+                ':nuevo' => $siguienteCorrelativo,
+                ':id_serie' => $serieRow['id_serie']
+            ]);
 
             $ventaData = [
                 'id_cliente' => $id_cliente,

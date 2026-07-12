@@ -5,6 +5,7 @@
     <div class="actions-group">
         <button type="button" class="btn btn-gold" id="btn_exportar_clientes"><i class="fa-solid fa-file-pdf"></i> Exportar PDF</button>
         <button type="button" class="btn btn-outline-success" id="btn_excel_clientes"><i class="fa-solid fa-file-excel"></i> Exportar Excel</button>
+        <button type="button" class="btn btn-outline-info" id="btn_email_clientes"><i class="fa-solid fa-envelope"></i> Enviar por Email</button>
     </div>
 </div>
 

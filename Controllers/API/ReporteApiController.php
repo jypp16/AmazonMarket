@@ -4,6 +4,7 @@ namespace Controllers\API;
 
 use Libraries\Core\ApiController;
 use Services\ReporteService;
+use Services\MailService;
 
 require_once __DIR__ . '/../../Libraries/PDF/ReportPDF.php';
 
@@ -66,6 +67,52 @@ class ReporteApiController extends ApiController {
         }
     }
 
+    public function post(?string $params = ""): void {
+        $this->requirePermission('reportes.exportar');
+
+        $input = $this->getInput();
+        $tipo = $input['tipo'] ?? '';
+        $email = $input['email'] ?? '';
+
+        if (empty($tipo) || empty($email)) {
+            $this->sendJsonResponse(['status' => false, 'message' => 'Faltan parámetros: tipo y email son requeridos.'], 400);
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->sendJsonResponse(['status' => false, 'message' => 'El correo electrónico no es válido.'], 400);
+        }
+
+        $inputFiltros = array_diff_key($input, array_flip(['tipo', 'email']));
+        $pdfContent = $this->generarPdfContent($tipo, $inputFiltros);
+
+        if ($pdfContent === null) {
+            $this->sendJsonResponse(['status' => false, 'message' => 'Tipo de reporte no válido.'], 400);
+        }
+
+        $nombreMap = [
+            'ventas' => 'Ventas por Periodo',
+            'productos-mas-vendidos' => 'Productos Mas Vendidos',
+            'productos-menos-vendidos' => 'Productos Menos Vendidos',
+            'inventario' => 'Inventario',
+            'clientes' => 'Clientes',
+            'vendedores' => 'Vendedores',
+            'categorias' => 'Categorias',
+            'comprobantes' => 'Comprobantes',
+            'metodos-pago' => 'Metodos de Pago',
+            'resumen' => 'Resumen Ejecutivo',
+        ];
+        $nombreReporte = $nombreMap[$tipo] ?? ucfirst($tipo);
+        $asunto = 'Reporte ' . $nombreReporte . ' - AmazonMarket';
+        $filename = 'Reporte_' . $tipo . '_' . date('Y-m-d') . '.pdf';
+
+        $mailService = new MailService();
+        if ($mailService->enviarReportePDF($email, $asunto, $pdfContent, $filename, $nombreReporte)) {
+            $this->sendJsonResponse(['status' => true, 'message' => 'Reporte enviado correctamente a ' . $email . '.']);
+        } else {
+            $this->sendJsonResponse(['status' => false, 'message' => 'Error al enviar el correo: ' . $mailService->getLastError()], 500);
+        }
+    }
+
     private function exportarPdf(array $input): void {
         $tipo = $input['tipo'] ?? '';
         $filename = 'Reporte_' . $tipo . '_' . date('Y-m-d_His') . '.pdf';
@@ -121,6 +168,49 @@ class ReporteApiController extends ApiController {
         $desde = $input['desde'] ?? date('Y-m-01');
         $hasta = $input['hasta'] ?? date('Y-m-d');
         return date('d/m/Y', strtotime($desde)) . ' al ' . date('d/m/Y', strtotime($hasta));
+    }
+
+    private function generarPdfContent(string $tipo, array $input): ?string {
+        $pdf = new \ReportPDF();
+        $pdf->AliasNbPages();
+        $pdf->setEmpresa('AMAZON MARKET');
+
+        switch ($tipo) {
+            case 'ventas':
+                $this->generarPdfVentas($pdf, $input);
+                break;
+            case 'productos-mas-vendidos':
+                $this->generarPdfProductosMasVendidos($pdf, $input);
+                break;
+            case 'productos-menos-vendidos':
+                $this->generarPdfProductosMenosVendidos($pdf, $input);
+                break;
+            case 'inventario':
+                $this->generarPdfInventario($pdf, $input);
+                break;
+            case 'clientes':
+                $this->generarPdfClientes($pdf, $input);
+                break;
+            case 'vendedores':
+                $this->generarPdfVendedores($pdf, $input);
+                break;
+            case 'categorias':
+                $this->generarPdfCategorias($pdf, $input);
+                break;
+            case 'comprobantes':
+                $this->generarPdfComprobantes($pdf, $input);
+                break;
+            case 'metodos-pago':
+                $this->generarPdfMetodosPago($pdf, $input);
+                break;
+            case 'resumen':
+                $this->generarPdfResumen($pdf, $input);
+                break;
+            default:
+                return null;
+        }
+
+        return $pdf->Output('S');
     }
 
     private function exportarExcel(array $input): void {

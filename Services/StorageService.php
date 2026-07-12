@@ -32,7 +32,7 @@ class StorageService {
             }
             $this->storagePath = realpath($path) ?: $path;
         }
-        $this->publicPath = __DIR__ . '/../../Assets/img/productos';
+        $this->publicPath = __DIR__ . '/../Assets/img/productos';
         if (!is_dir($this->publicPath)) {
             mkdir($this->publicPath, 0755, true);
         }
