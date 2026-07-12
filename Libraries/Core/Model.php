@@ -559,9 +559,7 @@ class Model extends Conexion {
         $this->bindWhereValues($stmt);
         $this->bindJoinValues($stmt);
         $stmt->execute();
-        $result = $stmt->fetchColumn();
-        $this->resetQuery();
-        return $result;
+        return $stmt->fetchColumn();
     }
 
     public function sum($field) {
