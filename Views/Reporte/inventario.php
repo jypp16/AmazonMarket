@@ -4,6 +4,7 @@
     <h3><i class="fa-solid fa-warehouse"></i> Valor de Inventario y Stock Bajo</h3>
     <div class="actions-group">
         <button type="button" class="btn btn-gold" id="btn_exportar_inventario"><i class="fa-solid fa-file-pdf"></i> Exportar PDF</button>
+        <button type="button" class="btn btn-outline-success" id="btn_excel_inventario"><i class="fa-solid fa-file-excel"></i> Exportar Excel</button>
     </div>
 </div>
 

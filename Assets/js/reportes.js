@@ -6,44 +6,90 @@ document.addEventListener('DOMContentLoaded', function () {
         window.location.href = url;
     }
 
+    function exportarExcel(tipo, params) {
+        var query = Object.keys(params).map(function (k) { return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]); }).join('&');
+        var url = API_URL + '/reportes/exportar-excel?tipo=' + encodeURIComponent(tipo) + (query ? '&' + query : '');
+        window.location.href = url;
+    }
+
     document.getElementById('btn_exportar_ventas')?.addEventListener('click', function () {
         exportarPdf('ventas', typeof exportParamsVentas !== 'undefined' ? exportParamsVentas : {});
+    });
+
+    document.getElementById('btn_excel_ventas')?.addEventListener('click', function () {
+        exportarExcel('ventas', typeof exportParamsVentas !== 'undefined' ? exportParamsVentas : {});
     });
 
     document.getElementById('btn_exportar_masVendidos')?.addEventListener('click', function () {
         exportarPdf('productos-mas-vendidos', typeof exportParamsMasVendidos !== 'undefined' ? exportParamsMasVendidos : {});
     });
 
+    document.getElementById('btn_excel_masVendidos')?.addEventListener('click', function () {
+        exportarExcel('productos-mas-vendidos', typeof exportParamsMasVendidos !== 'undefined' ? exportParamsMasVendidos : {});
+    });
+
     document.getElementById('btn_exportar_menosVendidos')?.addEventListener('click', function () {
         exportarPdf('productos-menos-vendidos', typeof exportParamsMenosVendidos !== 'undefined' ? exportParamsMenosVendidos : {});
+    });
+
+    document.getElementById('btn_excel_menosVendidos')?.addEventListener('click', function () {
+        exportarExcel('productos-menos-vendidos', typeof exportParamsMenosVendidos !== 'undefined' ? exportParamsMenosVendidos : {});
     });
 
     document.getElementById('btn_exportar_inventario')?.addEventListener('click', function () {
         exportarPdf('inventario', typeof exportParamsInventario !== 'undefined' ? exportParamsInventario : {});
     });
 
+    document.getElementById('btn_excel_inventario')?.addEventListener('click', function () {
+        exportarExcel('inventario', typeof exportParamsInventario !== 'undefined' ? exportParamsInventario : {});
+    });
+
     document.getElementById('btn_exportar_clientes')?.addEventListener('click', function () {
         exportarPdf('clientes', typeof exportParamsClientes !== 'undefined' ? exportParamsClientes : {});
+    });
+
+    document.getElementById('btn_excel_clientes')?.addEventListener('click', function () {
+        exportarExcel('clientes', typeof exportParamsClientes !== 'undefined' ? exportParamsClientes : {});
     });
 
     document.getElementById('btn_exportar_vendedores')?.addEventListener('click', function () {
         exportarPdf('vendedores', typeof exportParamsVendedores !== 'undefined' ? exportParamsVendedores : {});
     });
 
+    document.getElementById('btn_excel_vendedores')?.addEventListener('click', function () {
+        exportarExcel('vendedores', typeof exportParamsVendedores !== 'undefined' ? exportParamsVendedores : {});
+    });
+
     document.getElementById('btn_exportar_categorias')?.addEventListener('click', function () {
         exportarPdf('categorias', typeof exportParamsCategorias !== 'undefined' ? exportParamsCategorias : {});
+    });
+
+    document.getElementById('btn_excel_categorias')?.addEventListener('click', function () {
+        exportarExcel('categorias', typeof exportParamsCategorias !== 'undefined' ? exportParamsCategorias : {});
     });
 
     document.getElementById('btn_exportar_comprobantes')?.addEventListener('click', function () {
         exportarPdf('comprobantes', typeof exportParamsComprobantes !== 'undefined' ? exportParamsComprobantes : {});
     });
 
+    document.getElementById('btn_excel_comprobantes')?.addEventListener('click', function () {
+        exportarExcel('comprobantes', typeof exportParamsComprobantes !== 'undefined' ? exportParamsComprobantes : {});
+    });
+
     document.getElementById('btn_exportar_metodos')?.addEventListener('click', function () {
         exportarPdf('metodos-pago', typeof exportParamsMetodos !== 'undefined' ? exportParamsMetodos : {});
     });
 
+    document.getElementById('btn_excel_metodos')?.addEventListener('click', function () {
+        exportarExcel('metodos-pago', typeof exportParamsMetodos !== 'undefined' ? exportParamsMetodos : {});
+    });
+
     document.getElementById('btn_exportar_resumen')?.addEventListener('click', function () {
         exportarPdf('resumen', typeof exportParamsResumen !== 'undefined' ? exportParamsResumen : {});
+    });
+
+    document.getElementById('btn_excel_resumen')?.addEventListener('click', function () {
+        exportarExcel('resumen', typeof exportParamsResumen !== 'undefined' ? exportParamsResumen : {});
     });
 
     function renderLineChart(containerId, data, labelX, labelY) {

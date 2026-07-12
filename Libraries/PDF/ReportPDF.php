@@ -188,13 +188,28 @@ class ReportPDF extends FPDF {
         return date('d/m/Y H:i', strtotime($date));
     }
 
+    private function toLatin1(string $txt): string {
+        if (mb_check_encoding($txt, 'UTF-8')) {
+            return mb_convert_encoding($txt, 'ISO-8859-1', 'UTF-8');
+        }
+        return $txt;
+    }
+
+    public function Cell($w, $h = 0, $txt = '', $border = 0, $ln = 0, $align = '', $fill = false, $link = '') {
+        return parent::Cell($w, $h, $this->toLatin1($txt), $border, $ln, $align, $fill, $link);
+    }
+
+    public function MultiCell($w, $h = 0, $txt = '', $border = 0, $align = '', $fill = false) {
+        return parent::MultiCell($w, $h, $this->toLatin1($txt), $border, $align, $fill);
+    }
+
     public function fitText(string $txt, float $maxWidth): string {
         $txt = (string) $txt;
         if ($this->GetStringWidth($txt) <= $maxWidth) {
             return $txt;
         }
-        while (strlen($txt) > 0 && $this->GetStringWidth($txt . '...') > $maxWidth) {
-            $txt = substr($txt, 0, -1);
+        while (mb_strlen($txt) > 0 && $this->GetStringWidth($txt . '...') > $maxWidth) {
+            $txt = mb_substr($txt, 0, -1);
         }
         return $txt . '...';
     }
