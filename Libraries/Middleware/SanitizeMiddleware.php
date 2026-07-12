@@ -44,7 +44,6 @@ class SanitizeMiddleware extends Middleware {
     private function sanitizeString(string $value): string {
         $value = trim($value);
         $value = stripslashes($value);
-        $value = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
         return $value;
     }
 
@@ -52,15 +51,9 @@ class SanitizeMiddleware extends Middleware {
         if (is_array($data)) {
             return array_map([self::class, 'clean'], $data);
         }
-        return htmlspecialchars(trim(stripslashes($data)), ENT_QUOTES, 'UTF-8');
-    }
-
-    public static function cleanSql($data) {
-        if (is_array($data)) {
-            return array_map([self::class, 'cleanSql'], $data);
+        if (!is_string($data)) {
+            return $data;
         }
-        // Remover patrones peligrosos de SQL injection
-        $data = preg_replace('/(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|UNION|TRUNCATE|EXEC|EXECUTE)\b)/i', '', $data);
-        return $data;
+        return htmlspecialchars(trim(stripslashes($data)), ENT_QUOTES, 'UTF-8');
     }
 }

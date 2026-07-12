@@ -1,0 +1,12 @@
+# Variables de entorno (credenciales)
+.env
+
+# Logs
+*.log
+
+# Temporales
+*.tmp
+
+# Sistema
+Thumbs.db
+.DS_Store

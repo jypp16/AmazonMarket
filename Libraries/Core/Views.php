@@ -10,7 +10,7 @@ class Views {
         $viewPath = "Views/{$controllerName}/{$view}.php";
         if(file_exists($viewPath)) {
             extract($data);
-            require_once $viewPath;
+            require $viewPath;
         }
     }
 }
