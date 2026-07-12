@@ -97,7 +97,7 @@
         <div class="error-code">404</div>
         <h1 class="error-title">Página no encontrada</h1>
         <p class="error-message">La página que estás buscando no existe o ha sido movida.<br>Verifica la URL o vuelve al inicio.</p>
-        <a href="<?= defined('BASE_URL') ? BASE_URL : '/AM2/AmazonMarket' ?>" class="btn-home"><i class="fa-solid fa-house"></i> Ir al inicio</a>
+        <a href="<?= defined('BASE_URL') ? BASE_URL : '/AM4/AmazonMarket' ?>" class="btn-home"><i class="fa-solid fa-house"></i> Ir al inicio</a>
         <a href="javascript:history.go(-1)" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Volver atrás</a>
         <div class="footer-text">&copy; 2026 <span>Amazon</span> Market</div>
     </div>

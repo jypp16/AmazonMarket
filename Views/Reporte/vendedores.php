@@ -74,9 +74,9 @@
                 <td>
                     <div class="progress-row">
                         <div class="progress-track">
-                            <div class="progress-fill" style="width: <?= $v['porcentaje'] ?>%;"></div>
+                            <div class="progress-fill" style="width: <?= e($v['porcentaje']) ?>%;"></div>
                         </div>
-                        <span class="progress-label"><?= $v['porcentaje'] ?>%</span>
+                        <span class="progress-label"><?= e($v['porcentaje']) ?>%</span>
                     </div>
                 </td>
             </tr>

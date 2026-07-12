@@ -100,9 +100,9 @@
                 <td>
                     <div class="progress-row">
                         <div class="progress-track">
-                            <div class="progress-fill" style="width: <?= $p['porcentaje_ingresos'] ?>%;"></div>
+                            <div class="progress-fill" style="width: <?= e($p['porcentaje_ingresos']) ?>%;"></div>
                         </div>
-                        <span class="progress-label"><?= $p['porcentaje_ingresos'] ?>%</span>
+                        <span class="progress-label"><?= e($p['porcentaje_ingresos']) ?>%</span>
                     </div>
                 </td>
             </tr>

@@ -8,20 +8,20 @@
         </div>
         <div style="padding: 30px;">
             <h2 style="color: #1e293b; margin-top: 0;">Resumen del Día</h2>
-            <p>Hola <strong><?= $nombre ?></strong>,</p>
-            <p>Este es el resumen de ventas del día <strong><?= $fecha ?></strong>:</p>
+            <p>Hola <strong><?= htmlspecialchars($nombre) ?></strong>,</p>
+            <p>Este es el resumen de ventas del día <strong><?= htmlspecialchars($fecha) ?></strong>:</p>
             <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
                 <tr style="background: #f8f9fa;">
                     <td style="padding: 12px; border: 1px solid #dee2e6;"><strong>Total de Ventas:</strong></td>
-                    <td style="padding: 12px; border: 1px solid #dee2e6; font-weight: bold;"><?= $totalVentas ?></td>
+                    <td style="padding: 12px; border: 1px solid #dee2e6; font-weight: bold;"><?= htmlspecialchars($totalVentas) ?></td>
                 </tr>
                 <tr>
                     <td style="padding: 12px; border: 1px solid #dee2e6;"><strong>Ingresos Totales:</strong></td>
-                    <td style="padding: 12px; border: 1px solid #dee2e6; color: #16a34a; font-weight: bold;">S/. <?= $totalIngresos ?></td>
+                    <td style="padding: 12px; border: 1px solid #dee2e6; color: #16a34a; font-weight: bold;">S/. <?= htmlspecialchars($totalIngresos) ?></td>
                 </tr>
                 <tr style="background: #f8f9fa;">
                     <td style="padding: 12px; border: 1px solid #dee2e6;"><strong>Producto Más Vendido:</strong></td>
-                    <td style="padding: 12px; border: 1px solid #dee2e6;"><?= $productoTop ?></td>
+                    <td style="padding: 12px; border: 1px solid #dee2e6;"><?= htmlspecialchars($productoTop) ?></td>
                 </tr>
             </table>
             <p>Saludos,<br><strong>Equipo AmazonMarket</strong></p>

@@ -13,7 +13,7 @@ $slugs = array_column($permisos, 'slug');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <?= CSRFMiddleware::getTokenMeta() ?>
-    <title><?= $data['page_title'] ?? 'Amazon Market - Sistema de Ventas' ?></title>
+    <title><?= e($data['page_title'] ?? 'Amazon Market - Sistema de Ventas') ?></title>
     <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome para Iconos -->
@@ -95,7 +95,7 @@ $slugs = array_column($permisos, 'slug');
             <!-- Barra Superior del Workspace -->
             <header class="topbar">
                 <div class="topbar-left">
-                    <h1 class="page-title"><i class="fa-solid fa-folder-open"></i> <?= str_replace(" - Amazon Market", "", $data['page_title'] ?? '') ?></h1>
+                    <h1 class="page-title"><i class="fa-solid fa-folder-open"></i> <?= e(str_replace(" - Amazon Market", "", $data['page_title'] ?? '')) ?></h1>
                 </div>
                 <div class="topbar-right">
                     <span class="date-badge"><i class="fa-solid fa-calendar-day"></i> <?= date('d/m/Y') ?></span>

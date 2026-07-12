@@ -119,16 +119,26 @@ const ModalForm = {
 
             try {
                 const formData = new FormData(form);
-                const data = {};
-                formData.forEach((val, key) => { data[key] = val; });
+                const hasFiles = form.querySelector('input[type="file"]');
 
                 const method = config.method || (config.id ? 'PUT' : 'POST');
                 const endpoint = config.id ? config.endpoint + '/' + config.id : config.endpoint;
 
-                const result = await Api.request(endpoint, {
-                    method: method,
-                    body: data
-                });
+                let result;
+                if (hasFiles) {
+                    formData.append('_method', method);
+                    result = await Api.request(endpoint, {
+                        method: 'POST',
+                        body: formData
+                    });
+                } else {
+                    const data = {};
+                    formData.forEach((val, key) => { data[key] = val; });
+                    result = await Api.request(endpoint, {
+                        method: method,
+                        body: data
+                    });
+                }
 
                 if (result && result.ok) {
                     this._close();
