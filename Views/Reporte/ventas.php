@@ -95,7 +95,7 @@
         <div class="card-body">
             <div class="stat-icon"><i class="fa-solid fa-chart-simple"></i></div>
             <div class="stat-details">
-                <h3><?= $varIngresos >= 0 ? '+' : '' ?><?= $varIngresos ?>%</h3>
+                <h3><?= $varIngresos >= 0 ? '+' : '' ?><?= e($varIngresos) ?>%</h3>
                 <p>vs Período Anterior</p>
             </div>
         </div>
@@ -104,7 +104,7 @@
 
 <div class="card margin-bottom-20">
     <div class="form-card-header">
-        <h3><i class="fa-solid fa-chart-column"></i> Comprobantes: <?= $boletas ?> Boletas | <?= $facturas ?> Facturas</h3>
+        <h3><i class="fa-solid fa-chart-column"></i> Comprobantes: <?= e($boletas) ?> Boletas | <?= e($facturas) ?> Facturas</h3>
     </div>
     <div class="report-sub-card">
         <div id="chart_ventas_dia" class="chart-container" data-chart="line"></div>

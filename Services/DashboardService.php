@@ -20,10 +20,10 @@ class DashboardService {
 
     public function obtenerEstadisticas(): array {
         return [
-            'productos' => $this->productoModel->count('estado = 1'),
-            'clientes' => $this->clienteModel->count('estado = 1'),
-            'ventas' => $this->ventaModel->count('estado = 1'),
-            'ingresos' => $this->ventaModel->sum('total', 'estado = 1'),
+            'productos' => $this->productoModel->where(['estado' => 1])->count(),
+            'clientes' => $this->clienteModel->where(['estado' => 1])->count(),
+            'ventas' => $this->ventaModel->where(['estado' => 1])->count(),
+            'ingresos' => $this->ventaModel->where(['estado' => 1])->sum('total'),
         ];
     }
 }

@@ -33,6 +33,9 @@ class StorageService {
             $this->storagePath = realpath($path) ?: $path;
         }
         $this->publicPath = __DIR__ . '/../../Assets/img/productos';
+        if (!is_dir($this->publicPath)) {
+            mkdir($this->publicPath, 0755, true);
+        }
     }
 
     public function guardarImagen(array $file, string $codigoBarra): array {
@@ -46,6 +49,8 @@ class StorageService {
             $maxMb = $this->maxSize / (1024 * 1024);
             return ['ok' => false, 'message' => "El archivo excede el tamaño máximo de {$maxMb} MB."];
         }
+
+        $safeCode = preg_replace('/[^a-zA-Z0-9_-]/', '_', $codigoBarra);
         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
         if (!in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
             return ['ok' => false, 'message' => 'Tipo de archivo no permitido. Solo se aceptan JPG, PNG, GIF y WebP.'];
@@ -65,53 +70,57 @@ class StorageService {
         }
 
         $hash = hash('sha256', $content);
-        $finalName = $codigoBarra . '.' . $ext;
-        $destino = $this->storagePath . '/' . $finalName;
+        $hashName = $hash . '.' . $ext;
+        $secureDestino = $this->storagePath . '/' . $hashName;
 
-        $this->eliminarImagen($codigoBarra);
-
-        if (!move_uploaded_file($file['tmp_name'], $destino)) {
+        if (!move_uploaded_file($file['tmp_name'], $secureDestino)) {
             return ['ok' => false, 'message' => 'No se pudo mover el archivo al almacenamiento.'];
         }
 
-        $publicFile = $this->publicPath . '/' . $finalName;
-        copy($destino, $publicFile);
+        $this->eliminarImagen($codigoBarra);
+
+        $publicFile = $this->publicPath . '/' . $safeCode . '.' . $ext;
+        file_put_contents($publicFile, $content);
 
         $this->registrarHash($codigoBarra, $hash, $ext);
 
-        return ['ok' => true, 'message' => 'Imagen guardada correctamente.', 'filename' => $finalName, 'hash' => $hash];
+        return ['ok' => true, 'message' => 'Imagen guardada correctamente.', 'filename' => $hashName, 'hash' => $hash];
     }
 
     public function renombrarImagen(string $oldCodigo, string $newCodigo): void {
-        $oldFiles = glob($this->storagePath . '/' . $oldCodigo . '.*');
-        if ($oldFiles) {
-            foreach ($oldFiles as $oldFile) {
-                $ext = pathinfo($oldFile, PATHINFO_EXTENSION);
-                $newFile = $this->storagePath . '/' . $newCodigo . '.' . $ext;
-                rename($oldFile, $newFile);
+        $meta = $this->cargarMeta();
+        if (isset($meta[$oldCodigo])) {
+            $ext = $meta[$oldCodigo]['ext'];
+            $hash = $meta[$oldCodigo]['hash'];
+            $safeOld = preg_replace('/[^a-zA-Z0-9_-]/', '_', $oldCodigo);
+            $safeNew = preg_replace('/[^a-zA-Z0-9_-]/', '_', $newCodigo);
+
+            $oldPublic = $this->publicPath . '/' . $safeOld . '.' . $ext;
+            if (file_exists($oldPublic)) {
+                rename($oldPublic, $this->publicPath . '/' . $safeNew . '.' . $ext);
             }
-        }
-        $oldPublicFiles = glob($this->publicPath . '/' . $oldCodigo . '.*');
-        if ($oldPublicFiles) {
-            foreach ($oldPublicFiles as $oldFile) {
-                $ext = pathinfo($oldFile, PATHINFO_EXTENSION);
-                $newFile = $this->publicPath . '/' . $newCodigo . '.' . $ext;
-                rename($oldFile, $newFile);
-            }
+
+            $meta[$newCodigo] = $meta[$oldCodigo];
+            unset($meta[$oldCodigo]);
+            file_put_contents($this->storagePath . '/.meta.json', json_encode($meta, JSON_PRETTY_PRINT));
         }
     }
 
     public function eliminarImagen(string $codigoBarra): bool {
-        $files = glob($this->storagePath . '/' . $codigoBarra . '.*');
+        $meta = $this->cargarMeta();
         $deleted = false;
-        if ($files) {
-            foreach ($files as $file) {
-                if (unlink($file)) {
-                    $deleted = true;
-                }
+
+        if (isset($meta[$codigoBarra])) {
+            $ext = $meta[$codigoBarra]['ext'];
+            $hash = $meta[$codigoBarra]['hash'];
+            $secureFile = $this->storagePath . '/' . $hash . '.' . $ext;
+            if (file_exists($secureFile) && unlink($secureFile)) {
+                $deleted = true;
             }
         }
-        $publicFiles = glob($this->publicPath . '/' . $codigoBarra . '.*');
+
+        $safeCode = preg_replace('/[^a-zA-Z0-9_-]/', '_', $codigoBarra);
+        $publicFiles = glob($this->publicPath . '/' . $safeCode . '.*');
         if ($publicFiles) {
             foreach ($publicFiles as $file) {
                 unlink($file);
@@ -121,48 +130,72 @@ class StorageService {
     }
 
     public function existeImagen(string $codigoBarra): bool {
-        return count(glob($this->storagePath . '/' . $codigoBarra . '.*')) > 0;
+        $meta = $this->cargarMeta();
+        if (!isset($meta[$codigoBarra])) {
+            return false;
+        }
+        $ext = $meta[$codigoBarra]['ext'];
+        $hash = $meta[$codigoBarra]['hash'];
+        return file_exists($this->storagePath . '/' . $hash . '.' . $ext);
     }
 
     public function getRutaImagen(string $codigoBarra): ?string {
-        $files = glob($this->storagePath . '/' . $codigoBarra . '.*');
-        if ($files) {
-            return $files[0];
+        $meta = $this->cargarMeta();
+        if (!isset($meta[$codigoBarra])) {
+            return null;
         }
-        return null;
+        $ext = $meta[$codigoBarra]['ext'];
+        $hash = $meta[$codigoBarra]['hash'];
+        $path = $this->storagePath . '/' . $hash . '.' . $ext;
+        return file_exists($path) ? $path : null;
     }
 
     public function verificarIntegridad(string $codigoBarra): array {
-        $metaFile = $this->storagePath . '/.meta.json';
-        if (!file_exists($metaFile)) {
-            return ['ok' => false, 'message' => 'No hay metadatos registrados.'];
-        }
-        $meta = json_decode(file_get_contents($metaFile), true);
+        $meta = $this->cargarMeta();
         if (!isset($meta[$codigoBarra])) {
-            return ['ok' => false, 'message' => 'No se encontró registro de hash para este código.'];
+            return ['ok' => false, 'integridad_ok' => false, 'message' => 'No se encontró registro de hash para este código.'];
         }
-        $archivo = $this->storagePath . '/' . $codigoBarra . '.' . $meta[$codigoBarra]['ext'];
+        $ext = $meta[$codigoBarra]['ext'];
+        $hash = $meta[$codigoBarra]['hash'];
+        $archivo = $this->storagePath . '/' . $hash . '.' . $ext;
         if (!file_exists($archivo)) {
-            return ['ok' => false, 'message' => 'El archivo de imagen no existe.'];
+            return ['ok' => false, 'integridad_ok' => false, 'message' => 'El archivo de imagen no existe.'];
         }
         $hashActual = hash('sha256', file_get_contents($archivo));
-        $integro = ($hashActual === $meta[$codigoBarra]['hash']);
+        $integro = ($hashActual === $hash);
         return [
             'ok' => true,
-            'integro' => $integro,
-            'hash_esperado' => $meta[$codigoBarra]['hash'],
+            'integridad_ok' => $integro,
+            'hash_esperado' => $hash,
             'hash_actual' => $hashActual,
         ];
     }
 
+    private function cargarMeta(): array {
+        $metaFile = $this->storagePath . '/.meta.json';
+        if (!file_exists($metaFile)) {
+            return [];
+        }
+        return json_decode(file_get_contents($metaFile), true) ?: [];
+    }
+
     private function registrarHash(string $codigoBarra, string $hash, string $ext): void {
         $metaFile = $this->storagePath . '/.meta.json';
-        $meta = [];
-        if (file_exists($metaFile)) {
-            $meta = json_decode(file_get_contents($metaFile), true) ?: [];
+        $fp = fopen($metaFile, 'c');
+        if ($fp && flock($fp, LOCK_EX)) {
+            $meta = [];
+            if (filesize($metaFile) > 0) {
+                rewind($fp);
+                $content = stream_get_contents($fp);
+                $meta = json_decode($content, true) ?: [];
+            }
+            $meta[$codigoBarra] = ['hash' => $hash, 'ext' => $ext, 'fecha' => date('c')];
+            ftruncate($fp, 0);
+            rewind($fp);
+            fwrite($fp, json_encode($meta, JSON_PRETTY_PRINT));
+            flock($fp, LOCK_UN);
+            fclose($fp);
         }
-        $meta[$codigoBarra] = ['hash' => $hash, 'ext' => $ext, 'fecha' => date('c')];
-        file_put_contents($metaFile, json_encode($meta, JSON_PRETTY_PRINT));
     }
 
     private function detectarMimeType(string $content, string $ext): ?string {

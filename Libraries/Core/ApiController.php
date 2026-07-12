@@ -42,8 +42,14 @@ abstract class ApiController {
                 } else {
                     $this->sendJsonResponse(['status' => false, 'message' => 'La sintaxis JSON de la petición es inválida'], 400);
                 }
+            } elseif (str_contains($contentType, 'multipart/form-data')) {
+                $this->requestBody = $_POST;
+                $methodOverride = $_POST['_method'] ?? null;
+                if ($methodOverride && in_array(strtoupper($methodOverride), ['PUT', 'PATCH', 'DELETE'])) {
+                    $this->requestMethod = strtoupper($methodOverride);
+                }
             } elseif ($this->requestMethod !== 'DELETE') {
-                $this->sendJsonResponse(['status' => false, 'message' => 'El tipo de contenido debe ser application/json'], 415);
+                $this->sendJsonResponse(['status' => false, 'message' => 'El tipo de contenido debe ser application/json o multipart/form-data'], 415);
             }
         }
     }

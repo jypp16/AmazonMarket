@@ -123,7 +123,7 @@
                     <td class="cell-semibold"><?= e($v['vendedor']) ?></td>
                     <td><?= intval($v['num_ventas']) ?></td>
                     <td class="price-text">S/. <?= number_format(floatval($v['ingreso_total']), 2) ?></td>
-                    <td><?= $v['porcentaje'] ?>%</td>
+                    <td><?= e($v['porcentaje']) ?>%</td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>
@@ -144,7 +144,7 @@
                     <td class="cell-semibold"><?= e($m['metodo_pago']) ?></td>
                     <td><?= intval($m['num_transacciones']) ?></td>
                     <td class="price-text">S/. <?= number_format(floatval($m['monto_total']), 2) ?></td>
-                    <td><?= $m['porcentaje'] ?>%</td>
+                    <td><?= e($m['porcentaje']) ?>%</td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>

@@ -122,12 +122,9 @@ class Validation {
         return $this;
     }
 
-    public function exists($field, $table, $column = 'id', $condition = '') {
+    public function exists($field, $table, $column = 'id') {
         if (isset($this->data[$field]) && !empty($this->data[$field])) {
             $sql = "SELECT COUNT(*) FROM `{$table}` WHERE `{$column}` = :value";
-            if (!empty($condition)) {
-                $sql .= " AND {$condition}";
-            }
             $pdo = Conexion::getInstance()->conect();
             $stmt = $pdo->prepare($sql);
             $stmt->bindValue(':value', $this->data[$field]);

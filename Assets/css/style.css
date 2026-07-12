@@ -390,6 +390,16 @@ button, select, input, textarea { font-family: inherit; }
 .btn-edit:hover { background-color: #2563eb; color: var(--text-white); }
 .btn-delete { background-color: var(--color-danger-light); color: var(--color-danger); }
 .btn-delete:hover { background-color: var(--color-danger); color: var(--text-white); }
+.btn-outline-success {
+    background-color: transparent;
+    color: var(--color-success);
+    border: 1.5px solid var(--color-success);
+}
+.btn-outline-success:hover {
+    background-color: var(--color-success);
+    color: #fff;
+    transform: translateY(-1px);
+}
 
 .form-actions {
     grid-column: span 12; display: flex; gap: 12px;

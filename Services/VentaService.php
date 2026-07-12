@@ -58,9 +58,13 @@ class VentaService {
             return ['status' => false, 'message' => 'El cliente seleccionado no existe o está inactivo.'];
         }
 
-        // Validar que Factura requiera cliente con RUC (id_tipo_documento = 2)
-        if ($id_tipo_comprobante == 2 && intval($cliente['id_tipo_documento']) != 2) {
-            return ['status' => false, 'message' => 'Para emitir Factura, el cliente debe tener RUC.Seleccione un cliente con RUC.'];
+        // Validar que Factura requiera cliente con RUC (buscar ID por nombre, no hardcodear)
+        $facturaStmt = $this->pdo->prepare("SELECT id_tipo_comprobante FROM tipo_comprobante WHERE LOWER(nombre) LIKE '%factura%' AND estado = 1 LIMIT 1");
+        $facturaStmt->execute();
+        $facturaId = (int) $facturaStmt->fetchColumn();
+
+        if ($facturaId > 0 && $id_tipo_comprobante == $facturaId && intval($cliente['id_tipo_documento']) != 2) {
+            return ['status' => false, 'message' => 'Para emitir Factura, el cliente debe tener RUC. Seleccione un cliente con RUC.'];
         }
 
         $comprobanteSql = "SELECT COUNT(*) FROM tipo_comprobante WHERE id_tipo_comprobante = :id AND estado = 1";
@@ -91,11 +95,14 @@ class VentaService {
         if (empty($item['id_producto'])) {
             return "El producto #" . ($index + 1) . " no tiene ID válido.";
         }
-        if (empty($item['cantidad']) || floatval($item['cantidad']) <= 0) {
-            return "La cantidad del producto #" . ($index + 1) . " debe ser mayor a cero.";
+        if (!isset($item['cantidad']) || $item['cantidad'] === '' || $item['cantidad'] === null) {
+            return "La cantidad del producto #" . ($index + 1) . " es obligatoria.";
         }
         if (!is_numeric($item['cantidad'])) {
             return "La cantidad del producto #" . ($index + 1) . " debe ser un número válido.";
+        }
+        if (floatval($item['cantidad']) <= 0) {
+            return "La cantidad del producto #" . ($index + 1) . " debe ser mayor a cero.";
         }
         return true;
     }
@@ -118,8 +125,10 @@ class VentaService {
                 $detalles[] = $resultado['detalle'];
             }
 
-            // Crear venta (id_usuario llega validado desde el controlador/ApiController)
-            $serie = ($id_tipo_comprobante == 1) ? "B001" : "F001";
+            // Crear venta — buscar serie por nombre del comprobante, no hardcodear
+            $serieStmt = $this->pdo->prepare("SELECT serie FROM tipo_comprobante WHERE id_tipo_comprobante = :id AND estado = 1 LIMIT 1");
+            $serieStmt->execute([':id' => $id_tipo_comprobante]);
+            $serie = $serieStmt->fetchColumn() ?: 'B001';
             // Generar número correlativo por serie. SELECT ... FOR UPDATE bloquea
             // las filas leídas dentro de la transacción, evitando que dos ventas
             // concurrentes obtengan el mismo número (race condition).

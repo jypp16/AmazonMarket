@@ -8,12 +8,12 @@
         </div>
         <div style="padding: 30px;">
             <h2 style="color: #1e293b; margin-top: 0;">Productos con Stock Bajo</h2>
-            <p>Hola <strong><?= $nombre ?></strong>,</p>
+            <p>Hola <strong><?= htmlspecialchars($nombre) ?></strong>,</p>
             <p>Los siguientes productos tienen stock por debajo del mínimo:</p>
             <ul style="background: #fef2f2; padding: 20px 20px 20px 40px; border-radius: 8px; border-left: 4px solid #dc2626;">
                 <?= $productos ?>
             </ul>
-            <p style="color: #6b7280; font-size: 12px;">Fecha: <?= $fecha ?></p>
+            <p style="color: #6b7280; font-size: 12px;">Fecha: <?= htmlspecialchars($fecha) ?></p>
             <p>Saludos,<br><strong>Equipo AmazonMarket</strong></p>
         </div>
     </div>

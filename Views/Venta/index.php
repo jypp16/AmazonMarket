@@ -187,6 +187,5 @@
 document.body.classList.add('pos-mode');
 var BaseUrl = "<?= BASE_URL ?>";
 </script>
-<script src="<?= BASE_URL ?>/Assets/js/venta.js"></script>
 
 <?php require_once "Views/Footer.php"; ?>

@@ -6,7 +6,7 @@
         <div class="card-body">
             <div class="stat-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
             <div class="stat-details">
-                <h3><?= $data['productos'] ?></h3>
+                <h3><?= e($data['productos']) ?></h3>
                 <p>Productos en Stock</p>
             </div>
         </div>
@@ -20,7 +20,7 @@
         <div class="card-body">
             <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
             <div class="stat-details">
-                <h3><?= $data['clientes'] ?></h3>
+                <h3><?= e($data['clientes']) ?></h3>
                 <p>Clientes Registrados</p>
             </div>
         </div>
@@ -34,7 +34,7 @@
         <div class="card-body">
             <div class="stat-icon"><i class="fa-solid fa-cash-register"></i></div>
             <div class="stat-details">
-                <h3><?= $data['ventas'] ?></h3>
+                <h3><?= e($data['ventas']) ?></h3>
                 <p>Ventas Realizadas</p>
             </div>
         </div>

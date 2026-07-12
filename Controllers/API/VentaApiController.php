@@ -56,7 +56,7 @@ public function get(?string $params = ''): void
         $data['id_usuario'] = $this->authenticatedUserId;
 
         $validator = new \Libraries\Core\Validation($data);
-        $validator->required(['id_cliente', 'productos', 'id_tipo_comprobante']);
+        $validator->required(['id_cliente', 'productos', 'id_tipo_comprobante', 'id_metodo_pago']);
 
         if ($validator->fails()) {
             $this->sendJsonResponse(['status' => false, 'message' => 'Error de validación', 'errors' => $validator->errors()], 422);

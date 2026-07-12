@@ -48,7 +48,7 @@ class ProductoApiController extends ApiController {
             $categoria = $this->getParam('categoria', '');
             $stock = $this->getParam('stock', '');
             $page = max(1, intval($this->getParam('page', 1)));
-            $limit = min(50, max(1, intval($this->getParam('limit', 10))));
+            $limit = min(500, max(1, intval($this->getParam('limit', 10))));
 
             $query = $this->model
                 ->select(['producto.*', 'categoria.nombre as categoria', 'unidad_medida.abreviatura as unidad'])
@@ -212,6 +212,13 @@ class ProductoApiController extends ApiController {
         if ($exito) {
             if (isset($data['codigo_barra']) && $productoExistente['codigo_barra'] !== trim($data['codigo_barra'])) {
                 renombrar_imagen_producto($productoExistente['codigo_barra'], trim($data['codigo_barra']));
+            }
+            if (!empty($_FILES['imagen']) && $_FILES['imagen']['error'] !== UPLOAD_ERR_NO_FILE) {
+                $codigo = trim($data['codigo_barra'] ?? $productoExistente['codigo_barra']);
+                $img = guardar_imagen_producto($_FILES['imagen'], $codigo);
+                if (!$img['ok'] && $img['message'] !== 'No se envió archivo.') {
+                    $this->sendJsonResponse(['status' => true, 'message' => 'Producto actualizado, pero la imagen no se guardó: ' . $img['message']]);
+                }
             }
             $this->sendJsonResponse(['status' => true, 'message' => 'Producto actualizado de forma exitosa']);
         } else {

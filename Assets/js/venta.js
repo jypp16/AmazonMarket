@@ -22,7 +22,16 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-function apiData(r) { return r && r.ok ? (r.data.data || []) : []; }
+function apiData(r) {
+    if (!r) return [];
+    if (!r.ok) {
+        var msg = (r.data && r.data.message) || 'Error al cargar datos del servidor.';
+        console.error('apiData:', msg);
+        Modal.error('Error de carga', msg);
+        return [];
+    }
+    return r.data.data || [];
+}
 
 async function cargarClientes() {
     try { clientesLista = apiData(await Api.get('clientes')); } catch(e) { console.error('clientes:', e); }
@@ -341,8 +350,9 @@ function renderCarrito() {
         var inp = document.createElement('input');
         inp.type = 'number';
         inp.value = item.cantidad;
-        inp.min = '0.01';
-        inp.step = '0.01';
+        var esDecimal = isDecimalUnit(item.unidad);
+        inp.min = esDecimal ? '0.01' : '1';
+        inp.step = esDecimal ? '0.01' : '1';
         inp.addEventListener('change', function() { setQty(idx, inp.value); });
         var plus = document.createElement('button');
         plus.type = 'button';
@@ -373,7 +383,6 @@ function renderCarrito() {
         wrap.appendChild(line);
     });
     actualizarTotales();
-    if (wrap.scrollHeight > wrap.clientHeight) wrap.scrollTop = wrap.scrollHeight;
 }
 
 function actualizarTotales() {
@@ -565,6 +574,8 @@ async function guardarNuevoCliente() {
 }
 
 async function procesarVenta() {
+    var btn = document.getElementById('btn_procesar');
+    if (btn.disabled) return;
     var id_cliente = document.getElementById('id_cliente').value;
     var id_tc = document.getElementById('id_tipo_comprobante').value;
     var id_mp = document.getElementById('id_metodo_pago').value;
@@ -577,6 +588,7 @@ async function procesarVenta() {
     if (!ok) return;
 
     document.getElementById('loader_overlay').style.display = 'flex';
+    btn.disabled = true;
     try {
         var res = await Api.post('ventas', {
             id_cliente: parseInt(id_cliente),
@@ -599,6 +611,7 @@ async function procesarVenta() {
             );
             await Modal.success('Venta registrada',
                 'Serie: ' + d.serie + '\nNúmero: ' + d.numero + '\nTotal: S/. ' + parseFloat(d.total).toFixed(2));
+            await cargarProductos();
             carrito = [];
             clearClient();
             document.getElementById('monto_recibido').value = '';
@@ -610,10 +623,21 @@ async function procesarVenta() {
     } catch(e) {
         document.getElementById('loader_overlay').style.display = 'none';
         await Modal.error('Error', 'No se pudo procesar: ' + e.message);
+    } finally {
+        btn.disabled = false;
     }
 }
 
 function esc(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+function isDecimalUnit(unit) {
+    var u = (unit || '').toLowerCase();
+    var decimals = ['kg', 'lt', 'lb', 'gal', 'm', 'cm', 'ml', 'g', 'oz'];
+    for (var i = 0; i < decimals.length; i++) {
+        if (u.indexOf(decimals[i]) !== -1) return true;
+    }
+    return false;
+}
 
 function imprimirTicket(venta, items, cliente, metodoPago) {
     var now = new Date();

@@ -8,24 +8,24 @@
         </div>
         <div style="padding: 30px;">
             <h2 style="color: #1e293b; margin-top: 0;">Confirmación de Venta</h2>
-            <p>Hola <strong><?= $nombre ?></strong>,</p>
+            <p>Hola <strong><?= htmlspecialchars($nombre) ?></strong>,</p>
             <p>Tu venta ha sido registrada exitosamente:</p>
             <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
                 <tr style="background: #f8f9fa;">
                     <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>Serie:</strong></td>
-                    <td style="padding: 10px; border: 1px solid #dee2e6;"><?= $serie ?></td>
+                    <td style="padding: 10px; border: 1px solid #dee2e6;"><?= htmlspecialchars($serie) ?></td>
                 </tr>
                 <tr>
                     <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>Número:</strong></td>
-                    <td style="padding: 10px; border: 1px solid #dee2e6;"><?= $numero ?></td>
+                    <td style="padding: 10px; border: 1px solid #dee2e6;"><?= htmlspecialchars($numero) ?></td>
                 </tr>
                 <tr style="background: #f8f9fa;">
                     <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>Total:</strong></td>
-                    <td style="padding: 10px; border: 1px solid #dee2e6; color: #16a34a; font-weight: bold;">S/. <?= $total ?></td>
+                    <td style="padding: 10px; border: 1px solid #dee2e6; color: #16a34a; font-weight: bold;">S/. <?= htmlspecialchars($total) ?></td>
                 </tr>
                 <tr>
                     <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>Fecha:</strong></td>
-                    <td style="padding: 10px; border: 1px solid #dee2e6;"><?= $fecha ?></td>
+                    <td style="padding: 10px; border: 1px solid #dee2e6;"><?= htmlspecialchars($fecha) ?></td>
                 </tr>
             </table>
             <p style="color: #6b7280; font-size: 12px;">Gracias por tu compra.</p>

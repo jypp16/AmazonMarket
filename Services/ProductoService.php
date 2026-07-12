@@ -80,15 +80,16 @@ class ProductoService {
 
         if (isset($input['id_unidad']) || isset($input['stock_actual']) || isset($input['stock_minimo'])) {
             $unidadesDecimales = ['KG', 'LTR', 'LT', 'ML', 'G', 'OZ', 'LB', 'GAL', 'M', 'CM'];
-            $unidadId = intval($input['id_unidad'] ?? $id);
+            $productoExistente = $this->model->find($id);
+            $unidadId = intval($input['id_unidad'] ?? $productoExistente['id_unidad'] ?? 1);
             $unidadModel = new UnidadMedidaModel();
             $unidad = $unidadModel->find($unidadId);
             $abrev = strtoupper(trim($unidad['abreviatura'] ?? ''));
             $aceptaDecimales = in_array($abrev, $unidadesDecimales);
 
             if (!$aceptaDecimales) {
-                $stock = floatval($input['stock_actual'] ?? 0);
-                $minimo = floatval($input['stock_minimo'] ?? 1);
+                $stock = floatval($input['stock_actual'] ?? $productoExistente['stock_actual'] ?? 0);
+                $minimo = floatval($input['stock_minimo'] ?? $productoExistente['stock_minimo'] ?? 1);
                 if ($stock != intval($stock) || $minimo != intval($minimo)) {
                     return ['status' => false, 'message' => 'La unidad "' . ($unidad['nombre'] ?? '') . '" no acepta cantidades decimales. Use valores enteros.'];
                 }

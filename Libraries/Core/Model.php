@@ -16,10 +16,11 @@ class Model extends Conexion {
     protected $whereBuilder = [];
     protected $whereValues = [];
     protected $rawSelectBindings = [];
+    protected $joinValues = [];
     protected $groupByFields = [];
     protected $havingBuilder = [];
     protected $havingValues = [];
-    protected $orderBy = '';
+    protected $orderBy = [];
     protected $limit = '';
     protected $offset = '';
 
@@ -103,10 +104,11 @@ class Model extends Conexion {
         $this->whereBuilder = [];
         $this->whereValues = [];
         $this->rawSelectBindings = [];
+        $this->joinValues = [];
         $this->groupByFields = [];
         $this->havingBuilder = [];
         $this->havingValues = [];
-        $this->orderBy = '';
+        $this->orderBy = [];
         $this->limit = '';
         $this->offset = '';
     }
@@ -158,7 +160,7 @@ class Model extends Conexion {
             $sql .= "HAVING " . implode(" AND ", $this->havingBuilder) . " ";
         }
         if (!empty($this->orderBy)) {
-            $sql .= $this->orderBy . " ";
+            $sql .= "ORDER BY " . implode(", ", $this->orderBy) . " ";
         } else {
             $orderTable = !empty($this->tableAlias) ? $this->tableAlias : $this->table;
             $sql .= "ORDER BY " . $this->quoteFieldPath($orderTable . "." . $this->primaryKey) . " ASC ";
@@ -186,6 +188,12 @@ class Model extends Conexion {
 
     private function bindRawSelectValues($stmt) {
         foreach ($this->rawSelectBindings as $key => $value) {
+            $stmt->bindValue(":$key", $value);
+        }
+    }
+
+    private function bindJoinValues($stmt) {
+        foreach ($this->joinValues as $key => $value) {
             $stmt->bindValue(":$key", $value);
         }
     }
@@ -222,13 +230,12 @@ class Model extends Conexion {
 
     // ========== JOIN ==========
 
-    public function join($table, $condition, $type = 'INNER') {
+    public function join($table, $condition, $type = 'INNER', array $bindings = []) {
         $allowedTypes = ['INNER', 'LEFT', 'RIGHT', 'CROSS'];
         $type = strtoupper(trim($type));
         if (!in_array($type, $allowedTypes)) {
             throw new \InvalidArgumentException("Invalid JOIN type: $type");
         }
-        $this->checkForSqlInjection($condition);
         $quotedCondition = preg_replace_callback('/([a-zA-Z_][a-zA-Z0-9_]*)\.([a-zA-Z_][a-zA-Z0-9_]*)/', function($m) {
             return '`' . $m[1] . '`.`' . $m[2] . '`';
         }, $condition);
@@ -243,15 +250,18 @@ class Model extends Conexion {
             }
             $this->joins[] = "$type JOIN $quotedTable ON $quotedCondition";
         }
+        foreach ($bindings as $key => $value) {
+            $this->joinValues[$key] = $value;
+        }
         return $this;
     }
 
-    public function leftJoin($table, $condition) {
-        return $this->join($table, $condition, 'LEFT');
+    public function leftJoin($table, $condition, array $bindings = []) {
+        return $this->join($table, $condition, 'LEFT', $bindings);
     }
 
-    public function rightJoin($table, $condition) {
-        return $this->join($table, $condition, 'RIGHT');
+    public function rightJoin($table, $condition, array $bindings = []) {
+        return $this->join($table, $condition, 'RIGHT', $bindings);
     }
 
     // ========== WHERE ==========
@@ -314,6 +324,10 @@ class Model extends Conexion {
     }
 
     public function whereIn(string $field, array $values): self {
+        if (empty($values)) {
+            $this->whereBuilder[] = "1 = 0";
+            return $this;
+        }
         $safeField = $this->quoteFieldPath($field);
         $safeKey = preg_replace('/[^a-zA-Z0-9_]/', '_', $field);
         $placeholders = [];
@@ -327,6 +341,9 @@ class Model extends Conexion {
     }
 
     public function whereNotIn(string $field, array $values): self {
+        if (empty($values)) {
+            return $this;
+        }
         $safeField = $this->quoteFieldPath($field);
         $safeKey = preg_replace('/[^a-zA-Z0-9_]/', '_', $field);
         $placeholders = [];
@@ -419,6 +436,7 @@ class Model extends Conexion {
     }
 
     public function groupByRaw(string $expression): self {
+        $this->checkForSqlInjection($expression);
         $this->groupByFields[] = $expression;
         return $this;
     }
@@ -433,11 +451,12 @@ class Model extends Conexion {
         }
         $safeKey = preg_replace('/[^a-zA-Z0-9_]/', '_', $field);
         $this->havingBuilder[] = $this->quoteFieldPath($field) . " $operator :having_$safeKey";
-        $this->havingValues[$safeKey] = $value;
+        $this->havingValues["having_$safeKey"] = $value;
         return $this;
     }
 
     public function havingRaw(string $sql, array $bindings = []): self {
+        $this->checkForSqlInjection($sql);
         $this->havingBuilder[] = $sql;
         foreach ($bindings as $key => $value) {
             $this->havingValues[$key] = $value;
@@ -450,7 +469,13 @@ class Model extends Conexion {
     public function orderBy($field, $direction = 'ASC') {
         $field = $this->validateFieldName($field);
         $direction = $this->validateDirection($direction);
-        $this->orderBy = "ORDER BY " . $this->quoteFieldPath($field) . " $direction";
+        $this->orderBy[] = $this->quoteFieldPath($field) . " $direction";
+        return $this;
+    }
+
+    public function orderByRaw(string $expression): self {
+        $this->checkForSqlInjection($expression);
+        $this->orderBy[] = $expression;
         return $this;
     }
 
@@ -476,6 +501,7 @@ class Model extends Conexion {
         $this->bindWhereValues($stmt);
         $this->bindHavingValues($stmt);
         $this->bindRawSelectValues($stmt);
+        $this->bindJoinValues($stmt);
         $stmt->execute();
         $this->resetQuery();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -507,13 +533,18 @@ class Model extends Conexion {
 
     public function count($condition = '') {
         $sql = "SELECT COUNT(*) FROM `$this->table`";
-        if (!empty($condition)) {
+        if (!empty($this->whereBuilder)) {
+            $sql .= " WHERE " . implode(" AND ", $this->whereBuilder);
+        } elseif (!empty($condition)) {
             $this->checkForSqlInjection($condition);
             $sql .= " WHERE $condition";
         }
         $stmt = $this->conect()->prepare($sql);
+        $this->bindWhereValues($stmt);
         $stmt->execute();
-        return $stmt->fetchColumn();
+        $result = $stmt->fetchColumn();
+        $this->resetQuery();
+        return $result;
     }
 
     public function countWithQuery() {
@@ -526,60 +557,70 @@ class Model extends Conexion {
         }
         $stmt = $this->conect()->prepare($sql);
         $this->bindWhereValues($stmt);
+        $this->bindJoinValues($stmt);
         $stmt->execute();
-        return $stmt->fetchColumn();
+        $result = $stmt->fetchColumn();
+        $this->resetQuery();
+        return $result;
     }
 
-    public function sum($field, $condition = '') {
+    public function sum($field) {
         $field = $this->validateFieldName($field);
         $sql = "SELECT SUM(" . $this->quoteFieldPath($field) . ") FROM `$this->table`";
-        if (!empty($condition)) {
-            $this->checkForSqlInjection($condition);
-            $sql .= " WHERE $condition";
+        if (!empty($this->whereBuilder)) {
+            $sql .= " WHERE " . implode(" AND ", $this->whereBuilder);
         }
         $stmt = $this->conect()->prepare($sql);
+        $this->bindWhereValues($stmt);
         $stmt->execute();
-        return $stmt->fetchColumn() ?: 0.00;
+        $result = $stmt->fetchColumn() ?: 0.00;
+        $this->resetQuery();
+        return $result;
     }
 
-    public function avg($field, $condition = '') {
+    public function avg($field) {
         $field = $this->validateFieldName($field);
         $sql = "SELECT AVG(" . $this->quoteFieldPath($field) . ") FROM `$this->table`";
-        if (!empty($condition)) {
-            $this->checkForSqlInjection($condition);
-            $sql .= " WHERE $condition";
+        if (!empty($this->whereBuilder)) {
+            $sql .= " WHERE " . implode(" AND ", $this->whereBuilder);
         }
         $stmt = $this->conect()->prepare($sql);
+        $this->bindWhereValues($stmt);
         $stmt->execute();
-        return $stmt->fetchColumn() ?: 0.00;
+        $result = $stmt->fetchColumn() ?: 0.00;
+        $this->resetQuery();
+        return $result;
     }
 
-    public function min($field, $condition = '') {
+    public function min($field) {
         $field = $this->validateFieldName($field);
         $sql = "SELECT MIN(" . $this->quoteFieldPath($field) . ") FROM `$this->table`";
-        if (!empty($condition)) {
-            $this->checkForSqlInjection($condition);
-            $sql .= " WHERE $condition";
+        if (!empty($this->whereBuilder)) {
+            $sql .= " WHERE " . implode(" AND ", $this->whereBuilder);
         }
         $stmt = $this->conect()->prepare($sql);
+        $this->bindWhereValues($stmt);
         $stmt->execute();
-        return $stmt->fetchColumn() ?: 0;
+        $result = $stmt->fetchColumn() ?: 0;
+        $this->resetQuery();
+        return $result;
     }
 
-    public function max($field, $condition = '') {
+    public function max($field) {
         $field = $this->validateFieldName($field);
         $sql = "SELECT MAX(" . $this->quoteFieldPath($field) . ") FROM `$this->table`";
-        if (!empty($condition)) {
-            $this->checkForSqlInjection($condition);
-            $sql .= " WHERE $condition";
+        if (!empty($this->whereBuilder)) {
+            $sql .= " WHERE " . implode(" AND ", $this->whereBuilder);
         }
         $stmt = $this->conect()->prepare($sql);
+        $this->bindWhereValues($stmt);
         $stmt->execute();
-        return $stmt->fetchColumn() ?: 0;
+        $result = $stmt->fetchColumn() ?: 0;
+        $this->resetQuery();
+        return $result;
     }
 
     public function exists(): bool {
-        $this->limit(1);
         $sql = "SELECT 1 FROM `$this->table` ";
         if (!empty($this->joins)) {
             $sql .= implode(" ", $this->joins) . " ";
@@ -587,8 +628,10 @@ class Model extends Conexion {
         if (!empty($this->whereBuilder)) {
             $sql .= "WHERE " . implode(" AND ", $this->whereBuilder) . " ";
         }
+        $sql .= "LIMIT 1";
         $stmt = $this->conect()->prepare($sql);
         $this->bindWhereValues($stmt);
+        $this->bindJoinValues($stmt);
         $stmt->execute();
         $this->resetQuery();
         return $stmt->fetch() !== false;
@@ -601,7 +644,7 @@ class Model extends Conexion {
     }
 
     public function getBindValues(): array {
-        return $this->whereValues;
+        return array_merge($this->whereValues, $this->joinValues, $this->havingValues, $this->rawSelectBindings);
     }
 
     // ========== CRUD ==========
@@ -649,7 +692,8 @@ class Model extends Conexion {
         $sql = "UPDATE `$this->table` SET $setClause WHERE `$this->primaryKey` = :id";
         $stmt = $this->conect()->prepare($sql);
         foreach ($data as $key => $value) {
-            $stmt->bindValue(":$key", $value);
+            $safeKey = $this->validateFieldName($key);
+            $stmt->bindValue(":$safeKey", $value);
         }
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         return $stmt->execute();

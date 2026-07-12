@@ -1,5 +1,10 @@
 Options All -Indexes
 Options -MultiViews
+
+<FilesMatch "\.(env|htaccess|htpasswd|ini|log|sh|sql)$">
+    Require all denied
+</FilesMatch>
+
 RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f

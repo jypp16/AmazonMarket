@@ -21,8 +21,18 @@ class AuthController extends Controller {
 
     public function login() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Validar token CSRF también en el login (login CSRF mitigation)
             \Libraries\Middleware\CSRFMiddleware::verifyOrFail();
+
+            $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+            $rateKey = 'login_attempts_' . md5($ip);
+            $attempts = $_SESSION[$rateKey] ?? 0;
+            $lastAttempt = $_SESSION[$rateKey . '_time'] ?? 0;
+
+            if ($attempts >= 5 && (time() - $lastAttempt) < 300) {
+                $_SESSION['error'] = 'Demasiados intentos. Espere 5 minutos.';
+                header("Location: " . BASE_URL . "/Auth");
+                exit;
+            }
 
             $resultado = $this->service->login(
                 $_POST['username'] ?? '',
@@ -30,8 +40,11 @@ class AuthController extends Controller {
             );
 
             if ($resultado['status']) {
+                unset($_SESSION[$rateKey], $_SESSION[$rateKey . '_time']);
                 header("Location: " . BASE_URL . "/Home");
             } else {
+                $_SESSION[$rateKey] = $attempts + 1;
+                $_SESSION[$rateKey . '_time'] = time();
                 $_SESSION['error'] = $resultado['message'];
                 header("Location: " . BASE_URL . "/Auth");
             }
