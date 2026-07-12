@@ -81,6 +81,22 @@ class MailService {
         ]);
     }
 
+    public function enviarReportePDF(string $email, string $asunto, string $pdfContent, string $pdfFilename, string $nombreReporte = ''): bool {
+        $this->mailer->reset();
+        $this->mailer->to($email);
+        $this->mailer->subject($asunto);
+
+        $html = $this->getTemplate('reporte_email', [
+            'nombreReporte' => $nombreReporte,
+            'fecha' => date('d/m/Y H:i'),
+            'generadoPor' => $_SESSION['nombre'] ?? 'Sistema',
+        ]);
+
+        $this->mailer->html($html);
+        $this->mailer->stringAttach($pdfContent, $pdfFilename);
+        return $this->mailer->send();
+    }
+
     public function enviar(string $email, string $asunto, string $mensajeHtml): bool {
         $this->mailer->reset();
         $this->mailer->to($email);

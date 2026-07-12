@@ -83,12 +83,15 @@ public function get(?string $params = ''): void
         $validator->required(['nombre', 'nro_documento', 'id_tipo_documento'])
             ->minLength('nombre', 3)
             ->maxLength('nombre', 100)
-            ->minLength('nro_documento', 3)
-            ->maxLength('nro_documento', 20)
             ->maxLength('direccion', 150)
             ->email('email')
             ->phone('telefono')
             ->unique('nro_documento', $this->clienteModel);
+
+        $errorDoc = $this->validarNroDocumento($data);
+        if ($errorDoc) {
+            $validator->addError('nro_documento', $errorDoc);
+        }
 
         if ($validator->fails()) {
             $this->sendJsonResponse(['status' => false, 'message' => 'Error de validación', 'errors' => $validator->errors()], 422);
@@ -140,21 +143,38 @@ public function get(?string $params = ''): void
             $this->sendJsonResponse(['status' => false, 'message' => 'No se proporcionaron datos para actualizar'], 400);
         }
 
-        if (isset($data['nro_documento'])) {
-            $validator = new \Libraries\Core\Validation($data);
-            $validator->unique('nro_documento', $this->clienteModel, $idVal);
-            if ($validator->fails()) {
-                $this->sendJsonResponse(['status' => false, 'message' => 'Error de validación', 'errors' => $validator->errors()], 422);
-            }
+        $validator = new \Libraries\Core\Validation($datosActualizar);
+
+        if (isset($datosActualizar['nombre'])) {
+            $validator->minLength('nombre', 3)
+                ->maxLength('nombre', 100);
+        }
+        if (isset($datosActualizar['nro_documento'])) {
+            $validator->maxLength('nro_documento', 20)
+                ->unique('nro_documento', $this->clienteModel, $idVal);
         }
 
-        if (isset($data['email']) || isset($data['telefono'])) {
-            $validator = new \Libraries\Core\Validation($data);
-            if (isset($data['email'])) $validator->email('email');
-            if (isset($data['telefono'])) $validator->phone('telefono');
-            if ($validator->fails()) {
-                $this->sendJsonResponse(['status' => false, 'message' => 'Error de validación', 'errors' => $validator->errors()], 422);
-            }
+        $docData = [
+            'id_tipo_documento' => $datosActualizar['id_tipo_documento'] ?? $clienteExistente['id_tipo_documento'],
+            'nro_documento' => $datosActualizar['nro_documento'] ?? $clienteExistente['nro_documento']
+        ];
+        $errorDoc = $this->validarNroDocumento($docData);
+        if ($errorDoc) {
+            $validator->addError('nro_documento', $errorDoc);
+        }
+
+        if (isset($datosActualizar['email']) && $datosActualizar['email'] !== '') {
+            $validator->email('email');
+        }
+        if (isset($datosActualizar['telefono']) && $datosActualizar['telefono'] !== '') {
+            $validator->phone('telefono');
+        }
+        if (isset($datosActualizar['direccion'])) {
+            $validator->maxLength('direccion', 150);
+        }
+
+        if ($validator->fails()) {
+            $this->sendJsonResponse(['status' => false, 'message' => 'Error de validación', 'errors' => $validator->errors()], 422);
         }
 
         if ($this->clienteModel->update($idVal, $datosActualizar)) {
@@ -162,6 +182,41 @@ public function get(?string $params = ''): void
         } else {
             $this->sendJsonResponse(['status' => false, 'message' => 'Error al actualizar el cliente'], 500);
         }
+    }
+
+    private function validarNroDocumento(array $data): ?string {
+        $tipoId = intval($data['id_tipo_documento'] ?? 0);
+        $nro = trim($data['nro_documento'] ?? '');
+
+        if ($nro === '') return null;
+
+        switch ($tipoId) {
+            case 1:
+                if (!preg_match('/^\d{8}$/', $nro)) {
+                    return 'El DNI debe tener exactamente 8 dígitos.';
+                }
+                break;
+            case 2:
+                if (!preg_match('/^\d{11}$/', $nro)) {
+                    return 'El RUC debe tener exactamente 11 dígitos.';
+                }
+                break;
+            case 3:
+                if (!preg_match('/^[A-Za-z0-9]{5,20}$/', $nro)) {
+                    return 'El pasaporte debe tener entre 5 y 20 caracteres alfanuméricos.';
+                }
+                break;
+            case 4:
+                if (!preg_match('/^[A-Za-z0-9]{5,20}$/', $nro)) {
+                    return 'El carnet de extranjería debe tener entre 5 y 20 caracteres alfanuméricos.';
+                }
+                break;
+            default:
+                if (strlen($nro) < 3 || strlen($nro) > 20) {
+                    return 'El número de documento debe tener entre 3 y 20 caracteres.';
+                }
+        }
+        return null;
     }
 
     private function destroy(?string $id): void

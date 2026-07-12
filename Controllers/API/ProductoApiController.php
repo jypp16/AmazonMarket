@@ -182,15 +182,32 @@ class ProductoApiController extends ApiController {
             $this->sendJsonResponse(['status' => false, 'message' => 'No se proporcionaron datos para actualizar'], 400);
         }
 
-        if (isset($data['codigo_barra'])) {
-            $validator = new \Libraries\Core\Validation($data);
-            $validator->unique('codigo_barra', $this->model, $idVal);
-            if ($validator->fails()) {
-                $this->sendJsonResponse(['status' => false, 'message' => 'Error de validación', 'errors' => $validator->errors()], 422);
-            }
+        $validator = new \Libraries\Core\Validation($datosActualizar);
+
+        if (isset($datosActualizar['nombre'])) {
+            $validator->minLength('nombre', 3)
+                ->maxLength('nombre', 100);
+        }
+        if (isset($datosActualizar['codigo_barra'])) {
+            $validator->minLength('codigo_barra', 3)
+                ->maxLength('codigo_barra', 50)
+                ->unique('codigo_barra', $this->model, $idVal);
+        }
+        if (isset($datosActualizar['precio_venta'])) {
+            $validator->positiveNumber('precio_venta');
+        }
+        if (isset($datosActualizar['stock_actual'])) {
+            $validator->nonNegativeNumber('stock_actual');
+        }
+        if (isset($datosActualizar['stock_minimo'])) {
+            $validator->nonNegativeNumber('stock_minimo');
         }
 
-        if (isset($data['id_unidad']) || isset($data['stock_actual']) || isset($data['stock_minimo'])) {
+        if ($validator->fails()) {
+            $this->sendJsonResponse(['status' => false, 'message' => 'Error de validación', 'errors' => $validator->errors()], 422);
+        }
+
+        if (isset($datosActualizar['id_unidad']) || isset($datosActualizar['stock_actual']) || isset($datosActualizar['stock_minimo'])) {
             $unidadesDecimales = ['KG', 'LTR', 'LT', 'ML', 'G', 'OZ', 'LB', 'GAL', 'M', 'CM'];
             $unidadId = intval($data['id_unidad'] ?? $productoExistente['id_unidad']);
             $unidadModel = new \Models\UnidadMedidaModel();

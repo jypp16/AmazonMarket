@@ -84,8 +84,9 @@ class Validation {
 
     public function phone($field) {
         if (isset($this->data[$field]) && !empty($this->data[$field])) {
-            if (!preg_match('/^[0-9\s\-\+]{7,15}$/', trim($this->data[$field]))) {
-                $this->errors[$field] = "El campo {$field} debe ser un número de teléfono válido (7-15 dígitos).";
+            $cleaned = preg_replace('/[\s\-\(\)\.]/', '', $this->data[$field]);
+            if (!preg_match('/^\+?\d{7,12}$/', $cleaned)) {
+                $this->errors[$field] = "El campo {$field} debe ser un número de teléfono válido (7-12 dígitos).";
             }
         }
         return $this;
@@ -150,5 +151,10 @@ class Validation {
 
     public function firstError() {
         return !empty($this->errors) ? reset($this->errors) : null;
+    }
+
+    public function addError(string $field, string $message): self {
+        $this->errors[$field] = $message;
+        return $this;
     }
 }

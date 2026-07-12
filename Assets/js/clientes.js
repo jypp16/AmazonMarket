@@ -136,12 +136,28 @@ document.addEventListener('DOMContentLoaded', () => {
             campos: [
                 { name: 'id_tipo_documento', label: 'Tipo de Documento', type: 'select', col: 'col-6', required: true,
                     options: tiposDocumento.map(t => ({ value: t.id_tipo_documento, label: t.nombre })) },
-                { name: 'nro_documento', label: 'Nro. Documento', type: 'text', col: 'col-6', required: true, placeholder: 'Número de documento' },
+                { name: 'nro_documento', label: 'Nro. Documento', type: 'text', col: 'col-6', required: true, placeholder: 'DNI: 8 dígitos' },
                 { name: 'nombre', label: 'Nombre / Razón Social', type: 'text', col: 'col-6', required: true, placeholder: 'Nombre completo' },
                 { name: 'telefono', label: 'Teléfono', type: 'text', col: 'col-6', placeholder: 'Número de celular' },
                 { name: 'email', label: 'Correo Electrónico', type: 'email', col: 'col-6', placeholder: 'correo@ejemplo.com' },
                 { name: 'direccion', label: 'Dirección', type: 'text', col: 'col-6', placeholder: 'Calle, Av, Jr...' }
-            ]
+            ],
+            onMount: (form) => {
+                const selTipo = form.querySelector('[name="id_tipo_documento"]');
+                const inpDoc = form.querySelector('[name="nro_documento"]');
+                if (!selTipo || !inpDoc) return;
+
+                function actualizarHint() {
+                    const val = parseInt(selTipo.value);
+                    const hints = { 1: { max: 8, ph: 'DNI: 8 dígitos' }, 2: { max: 11, ph: 'RUC: 11 dígitos' }, 3: { max: 20, ph: 'Pasaporte: 5-20 caracteres' }, 4: { max: 20, ph: 'Carnet: 5-20 caracteres' } };
+                    const h = hints[val] || { max: 20, ph: 'Número de documento' };
+                    inpDoc.maxLength = h.max;
+                    inpDoc.placeholder = h.ph;
+                    inpDoc.pattern = val <= 2 ? '\\d{' + h.max + '}' : '[A-Za-z0-9]{5,20}';
+                }
+                actualizarHint();
+                selTipo.addEventListener('change', actualizarHint);
+            }
         });
     }
 
@@ -162,7 +178,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 { name: 'telefono', label: 'Teléfono', type: 'text', col: 'col-6', value: cli.telefono || '' },
                 { name: 'email', label: 'Correo Electrónico', type: 'email', col: 'col-6', value: cli.email || '' },
                 { name: 'direccion', label: 'Dirección', type: 'text', col: 'col-6', value: cli.direccion || '' }
-            ]
+            ],
+            onMount: (form) => {
+                const selTipo = form.querySelector('[name="id_tipo_documento"]');
+                const inpDoc = form.querySelector('[name="nro_documento"]');
+                if (!selTipo || !inpDoc) return;
+
+                function actualizarHint() {
+                    const val = parseInt(selTipo.value);
+                    const hints = { 1: { max: 8, ph: 'DNI: 8 dígitos' }, 2: { max: 11, ph: 'RUC: 11 dígitos' }, 3: { max: 20, ph: 'Pasaporte: 5-20 caracteres' }, 4: { max: 20, ph: 'Carnet: 5-20 caracteres' } };
+                    const h = hints[val] || { max: 20, ph: 'Número de documento' };
+                    inpDoc.maxLength = h.max;
+                    inpDoc.placeholder = h.ph;
+                }
+                actualizarHint();
+                selTipo.addEventListener('change', actualizarHint);
+            }
         });
     }
 

@@ -74,6 +74,11 @@ class Mailer {
         return $this;
     }
 
+    public function stringAttach(string $content, string $fileName, string $encoding = PHPMailerBase::ENCODING_BASE64, string $type = 'application/pdf'): self {
+        $this->mailer->addStringAttachment($content, $fileName, $encoding, $type);
+        return $this;
+    }
+
     public function send(): bool {
         try {
             $this->mailer->send();
