@@ -16,6 +16,13 @@ class ExcelService {
     private Style $percentStyle;
     private Style $numberStyle;
 
+    private function createTempFile(): string {
+        $tmp = tempnam(sys_get_temp_dir(), 'xlsx');
+        $filename = $tmp . '.xlsx';
+        unlink($tmp);
+        return $filename;
+    }
+
     public function __construct() {
         $this->headerStyle = (new Style())
             ->setFontBold()
@@ -101,7 +108,7 @@ class ExcelService {
     }
 
     public function generarVentas(array $data, array $input): string {
-        $filename = tempnam(sys_get_temp_dir(), 'xlsx') . '.xlsx';
+        $filename = $this->createTempFile();
         $this->open($filename);
 
         $this->addTitleRow('REPORTE DE VENTAS POR PERIODO');
@@ -139,7 +146,7 @@ class ExcelService {
     }
 
     public function generarProductosMasVendidos(array $data, array $input): string {
-        $filename = tempnam(sys_get_temp_dir(), 'xlsx') . '.xlsx';
+        $filename = $this->createTempFile();
         $this->open($filename);
 
         $this->addTitleRow('PRODUCTOS MAS VENDIDOS');
@@ -155,7 +162,7 @@ class ExcelService {
                 $p['categoria'],
                 intval($p['unidades_vendidas']),
                 floatval($p['ingresos']),
-                floatval($p['porcentaje_ingresos']) / 100,
+                floatval($p['porcentaje_ingresos']),
             ], ['number', 'text', 'text', 'number', 'money', 'percent']);
         }
         $this->addTotalRow([
@@ -169,7 +176,7 @@ class ExcelService {
     }
 
     public function generarProductosMenosVendidos(array $data, array $input): string {
-        $filename = tempnam(sys_get_temp_dir(), 'xlsx') . '.xlsx';
+        $filename = $this->createTempFile();
         $this->open($filename);
 
         $this->addTitleRow('PRODUCTOS MENOS VENDIDOS / SIN MOVIMIENTO');
@@ -201,7 +208,7 @@ class ExcelService {
     }
 
     public function generarInventario(array $data): string {
-        $filename = tempnam(sys_get_temp_dir(), 'xlsx') . '.xlsx';
+        $filename = $this->createTempFile();
         $this->open($filename);
 
         $this->addTitleRow('VALOR DE INVENTARIO Y STOCK BAJO');
@@ -239,7 +246,7 @@ class ExcelService {
     }
 
     public function generarClientes(array $data, array $input): string {
-        $filename = tempnam(sys_get_temp_dir(), 'xlsx') . '.xlsx';
+        $filename = $this->createTempFile();
         $this->open($filename);
 
         $this->addTitleRow('REPORTE DE CLIENTES');
@@ -270,7 +277,7 @@ class ExcelService {
     }
 
     public function generarVendedores(array $data, array $input): string {
-        $filename = tempnam(sys_get_temp_dir(), 'xlsx') . '.xlsx';
+        $filename = $this->createTempFile();
         $this->open($filename);
 
         $this->addTitleRow('VENTAS POR VENDEDOR');
@@ -285,7 +292,7 @@ class ExcelService {
                 intval($v['num_ventas']),
                 floatval($v['ingreso_total']),
                 floatval($v['ticket_promedio']),
-                floatval($v['porcentaje']) / 100,
+                floatval($v['porcentaje']),
             ], ['text', 'number', 'money', 'money', 'percent']);
         }
         $this->addTotalRow([
@@ -298,7 +305,7 @@ class ExcelService {
     }
 
     public function generarCategorias(array $data, array $input): string {
-        $filename = tempnam(sys_get_temp_dir(), 'xlsx') . '.xlsx';
+        $filename = $this->createTempFile();
         $this->open($filename);
 
         $this->addTitleRow('VENTAS POR CATEGORIA');
@@ -312,7 +319,7 @@ class ExcelService {
                 $c['categoria'],
                 intval($c['unidades']),
                 floatval($c['ingresos']),
-                floatval($c['porcentaje']) / 100,
+                floatval($c['porcentaje']),
             ], ['text', 'number', 'money', 'percent']);
         }
         $this->addTotalRow([
@@ -326,7 +333,7 @@ class ExcelService {
     }
 
     public function generarComprobantes(array $data, array $input): string {
-        $filename = tempnam(sys_get_temp_dir(), 'xlsx') . '.xlsx';
+        $filename = $this->createTempFile();
         $this->open($filename);
 
         $this->addTitleRow('REPORTE DE COMPROBANTES');
@@ -354,7 +361,7 @@ class ExcelService {
     }
 
     public function generarMetodosPago(array $data, array $input): string {
-        $filename = tempnam(sys_get_temp_dir(), 'xlsx') . '.xlsx';
+        $filename = $this->createTempFile();
         $this->open($filename);
 
         $this->addTitleRow('METODOS DE PAGO');
@@ -368,7 +375,7 @@ class ExcelService {
                 $m['metodo_pago'],
                 intval($m['num_transacciones']),
                 floatval($m['monto_total']),
-                floatval($m['porcentaje']) / 100,
+                floatval($m['porcentaje']),
             ], ['text', 'number', 'money', 'percent']);
         }
         $this->addTotalRow([
@@ -382,7 +389,7 @@ class ExcelService {
     }
 
     public function generarResumen(array $data, array $input): string {
-        $filename = tempnam(sys_get_temp_dir(), 'xlsx') . '.xlsx';
+        $filename = $this->createTempFile();
         $this->open($filename);
 
         $ventas = $data['ventas'] ?? [];
@@ -419,7 +426,7 @@ class ExcelService {
                 $v['vendedor'],
                 intval($v['num_ventas']),
                 floatval($v['ingreso_total']),
-                floatval($v['porcentaje']) / 100,
+                floatval($v['porcentaje']),
             ], ['text', 'number', 'money', 'percent']);
         }
         $this->addEmptyRow();
@@ -430,7 +437,7 @@ class ExcelService {
                 $m['metodo_pago'],
                 intval($m['num_transacciones']),
                 floatval($m['monto_total']),
-                floatval($m['porcentaje']) / 100,
+                floatval($m['porcentaje']),
             ], ['text', 'number', 'money', 'percent']);
         }
 

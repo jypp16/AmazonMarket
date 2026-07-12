@@ -124,6 +124,10 @@ class UsuarioController extends Controller {
     }
 
     public function eliminar($params) {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header("Location: " . BASE_URL . "/Usuario");
+            exit;
+        }
         $id = intval($params);
         if ($id > 0) {
             $isJson = isset($_GET['json']) || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);

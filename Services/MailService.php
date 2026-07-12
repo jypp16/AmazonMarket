@@ -36,7 +36,7 @@ class MailService {
 
         $listaHtml = '';
         foreach ($productos as $p) {
-            $listaHtml .= "<li>{$p['nombre']} - Stock actual: {$p['stock_actual']}</li>";
+            $listaHtml .= "<li>" . htmlspecialchars($p['nombre']) . " - Stock actual: " . intval($p['stock_actual']) . "</li>";
         }
 
         $html = $this->getTemplate('alerta_stock', [
@@ -121,8 +121,8 @@ class MailService {
                     <h1 style='margin: 0; font-size: 20px;'>AmazonMarket</h1>
                 </div>
                 <div style='padding: 30px;'>
-                    <p>Hola <strong>{$nombre}</strong>,</p>
-                    <p>Fecha: {$fecha}</p>
+                    <p>Hola <strong>" . htmlspecialchars($nombre) . "</strong>,</p>
+                    <p>Fecha: " . htmlspecialchars($fecha) . "</p>
                     <p>Saludos,<br>Equipo AmazonMarket</p>
                 </div>
             </div>

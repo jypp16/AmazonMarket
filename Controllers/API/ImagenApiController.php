@@ -2,9 +2,7 @@
 
 namespace Controllers\API;
 
-use Libraries\Core\ApiController;
-
-class ImagenApiController extends ApiController {
+class ImagenApiController {
 
     private string $storagePath;
 
@@ -27,20 +25,9 @@ class ImagenApiController extends ApiController {
             return;
         }
 
-        $extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-        $found = false;
-        $filePath = '';
+        $filePath = $this->buscarEnStorage($codigoBarra);
 
-        foreach ($extensions as $ext) {
-            $candidate = $this->storagePath . '/' . $codigoBarra . '.' . $ext;
-            if (file_exists($candidate)) {
-                $filePath = $candidate;
-                $found = true;
-                break;
-            }
-        }
-
-        if (!$found) {
+        if (!$filePath) {
             $fallback = __DIR__ . '/../../../Assets/img/productos/no-image.jpg';
             if (file_exists($fallback)) {
                 $filePath = $fallback;
@@ -67,5 +54,33 @@ class ImagenApiController extends ApiController {
         header('Content-Length: ' . filesize($filePath));
         readfile($filePath);
         exit;
+    }
+
+    private function buscarEnStorage(string $codigoBarra): ?string {
+        $metaFile = $this->storagePath . '/.meta.json';
+        if (file_exists($metaFile)) {
+            $meta = json_decode(file_get_contents($metaFile), true) ?: [];
+            if (isset($meta[$codigoBarra])) {
+                $ext = $meta[$codigoBarra]['ext'] ?? '';
+                $hash = $meta[$codigoBarra]['hash'] ?? '';
+                if (!preg_match('/^[a-f0-9]{16,128}$/', $hash) || !in_array($ext, ['jpg','jpeg','png','gif','webp'], true)) {
+                    return null;
+                }
+                $path = $this->storagePath . '/' . $hash . '.' . $ext;
+                if (file_exists($path)) {
+                    return $path;
+                }
+            }
+        }
+
+        $extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        foreach ($extensions as $ext) {
+            $candidate = $this->storagePath . '/' . $codigoBarra . '.' . $ext;
+            if (file_exists($candidate)) {
+                return $candidate;
+            }
+        }
+
+        return null;
     }
 }
