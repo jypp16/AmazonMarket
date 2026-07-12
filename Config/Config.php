@@ -4,7 +4,7 @@ require_once __DIR__ . '/../Libraries/Core/Dotenv.php';
 
 Dotenv::load(__DIR__ . '/../.env');
 
-$baseUrl = getenv('BASE_URL') ?: 'http://localhost/AM4/AmazonMarket';
+$baseUrl = getenv('BASE_URL') ?: 'http://localhost/AmazonMarket';
 
 define('BASE_URL', $baseUrl);
 define('API_URL', $baseUrl . '/api');
